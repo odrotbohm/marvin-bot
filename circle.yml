@@ -1,14 +1,26 @@
 ---
-
 machine:
-
   java:
     version: oraclejdk8
 
   environment:
     SPRING_ACTIVE_PROFILE: circleci
 
+dependencies:
+  pre:
+    - curl -v -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
+    - sudo dpkg -i cf-cli_amd64.deb
+    - cf -v
+
 test:
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
     - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+
+deployment:
+  production:
+    branch: master
+    commands:
+      - cf auth $CF_USER $CF_PASSWORD
+      - cf target -o 'Labs Singapore' -s marvin
+      - cf push
