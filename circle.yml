@@ -3,7 +3,7 @@
 machine:
 
   java:
-    version: openjdk8
+    version: oraclejdk8
 
   environment:
     SPRING_ACTIVE_PROFILE: circleci
