@@ -1,0 +1,8 @@
+---
+applications:
+- name: marvin
+  disk: 256M
+  memory: 512M
+  host: marvin-bot
+  path: build/libs/marvin-0.0.1-SNAPSHOT.jar
+  buildpack: java_buildpack
