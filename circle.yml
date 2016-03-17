@@ -1,0 +1,5 @@
+---
+
+machine:
+  environment:
+    SPRING_ACTIVE_PROFILE: circleci
