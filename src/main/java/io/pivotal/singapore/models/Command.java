@@ -1,18 +1,31 @@
 package io.pivotal.singapore.models;
 
-/**
- * Created by neo on 18/3/16.
- */
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
+@Entity
 public class Command {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private String name;
     private String endpoint;
+
+    private RequestMethod method;
 
     public Command(String name, String endpoint) {
         this.id = 0 ; // for now hard code all IDs to be 0....
         this.name = name;
         this.endpoint = endpoint;
+        this.method = RequestMethod.POST;
     }
+
+    public Command() {} // to make JPA happy....
 
     public long getId() {
         return id;
@@ -38,5 +51,12 @@ public class Command {
         this.endpoint = endpoint;
     }
 
+    public RequestMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(RequestMethod method) {
+        this.method = method;
+    }
 
 }

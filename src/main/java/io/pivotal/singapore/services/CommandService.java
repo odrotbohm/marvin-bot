@@ -1,21 +1,23 @@
 package io.pivotal.singapore.services;
 
 import io.pivotal.singapore.models.Command;
+import io.pivotal.singapore.repositories.CommandRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CommandService {
 
-    private ArrayList<Command> commands = new ArrayList<Command>();
+    @Autowired
+    CommandRepository cmdRepository;
 
     public List<Command> getCommands() {
-        return commands;
+        return cmdRepository.findAll();
     }
 
     public void addCommand(Command command) {
-        commands.add(command);
+        cmdRepository.save(command);
     }
 }
