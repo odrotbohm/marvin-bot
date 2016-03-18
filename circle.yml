@@ -4,7 +4,10 @@ machine:
     version: oraclejdk8
 
   environment:
-    SPRING_PROFILES_ACTIVE: circleci
+    SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/ubuntu
+    SPRING_DATASOURCE_USERNAME: ubuntu
+    SPRING_DATASOURCE_PASSWORD:
+
 
 dependencies:
   pre:
