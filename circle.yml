@@ -4,7 +4,7 @@ machine:
     version: oraclejdk8
 
   environment:
-    SPRING_ACTIVE_PROFILE: circleci
+    SPRING_PROFILES_ACTIVE: circleci
 
 dependencies:
   pre:
