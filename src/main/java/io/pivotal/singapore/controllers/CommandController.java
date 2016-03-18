@@ -18,6 +18,10 @@ public class CommandController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Command> index() {
+        if(commandService.getCommands().size() == 0) {
+            // TODO: Remove this when you can actually create commands
+            commandService.addCommand(new Command("asdf", "asdf"));
+        }
         return commandService.getCommands();
     }
 
