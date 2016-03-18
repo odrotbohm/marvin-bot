@@ -18,6 +18,9 @@ public class CommandController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<Command> index() {
+        if(commandService.getCommands().size() == 0) {
+            commandService.addCommand(new Command("event", "http://events-endpoint.example.com/"));
+        }
         return commandService.getCommands();
     }
 
