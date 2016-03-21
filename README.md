@@ -6,7 +6,11 @@ Marvin - a depressed bot
 This project uses [Flyway] for migrations. The decision has been made to keep the PostgreSQL sequence generation instead
 of the global one sequence to rule them all of Hibernate.
 
-To make a new migration create a new entity. The convention for tables and columns matches those of Ruby on Rails.
+The ability for Hibernate to automagically update the database for you has been disabled. Any changes to the database
+schema has to be done manually, and a migration made.
+
+To make a new migration create a new entity. The convention for tables and columns matches those of Ruby on Rails, not
+the default Hibernate/JPA of just naming it exactly after the class.
 
 An example entity with a custom set table name and a PostgreSQL table sequence.
 
