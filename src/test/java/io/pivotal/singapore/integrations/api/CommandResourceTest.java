@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.core.Is.is;
@@ -39,6 +40,7 @@ public class CommandResourceTest {
     }
 
     @Test
+    @Transactional
     public void testCommandsListing() throws Exception {
         mockMvc.perform(get("/api/v1/commands"))
                 .andExpect(status().isOk())
