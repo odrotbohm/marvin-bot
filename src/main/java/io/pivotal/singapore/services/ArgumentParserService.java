@@ -68,6 +68,7 @@ class ArgumentParserService {
         List<DateGroup> parse = new PrettyTimeParser().parseSyntax(s);
         if (parse != null && !parse.isEmpty()) {
             Date d = parse.get(0).getDates().get(0);
+            ZoneId defaultTimezone = ZoneId.of("+08:00");
 
             /* $)(&*%)(@# Timezones.
              * The original timezone offset is only available from calendar instances.
@@ -88,9 +89,9 @@ class ArgumentParserService {
                 .toInstant()
                 .atZone(ZoneOffset.of("+00:00")); // Forces the timezone to UTC for *all*
             if (calendar.getTimeZone().getRawOffset() == 0) { // Correct display time, wrong time
-                zonedDateTime = zonedDateTime.withZoneSameLocal(ZoneId.of("+08:00"));
+                zonedDateTime = zonedDateTime.withZoneSameLocal(defaultTimezone);
             } else { // Correct time, wrong display time
-                zonedDateTime = zonedDateTime.withZoneSameInstant(ZoneId.of("+08:00"));
+                zonedDateTime = zonedDateTime.withZoneSameInstant(defaultTimezone);
             }
 
             return zonedDateTime.format(ISO_OFFSET_DATE_TIME);
