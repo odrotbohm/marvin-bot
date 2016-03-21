@@ -116,5 +116,17 @@ public class ArgumentParserServiceTest {
             aps.parse(s, arguments);
         }
 
+        @Test
+        public void ensureLineIsTrimmedFromLeadingAndTrailingWhitespace() {
+            String s = "     Hello   There    ";
+            TreeMap<String, String> arguments = new TreeMap<>();
+            arguments.put("first", "/(Hello)/");
+            arguments.put("second", "/(There)/");
+
+            TreeMap result = aps.parse(s, arguments);
+
+            assertThat(result.get("first"), equalTo("Hello"));
+            assertThat(result.get("second"), equalTo("There"));
+        }
     }
 }

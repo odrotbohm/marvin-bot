@@ -23,6 +23,7 @@ class ArgumentParserService {
 
         for (Map.Entry<String, String> e : argumentsConfig.entrySet()) {
             String regex = e.getValue();
+            s = s.trim();
 
             if (regex.startsWith("/")) {
                 try {
