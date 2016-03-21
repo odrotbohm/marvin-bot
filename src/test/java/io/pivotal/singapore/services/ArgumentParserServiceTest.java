@@ -80,7 +80,7 @@ public class ArgumentParserServiceTest {
         public void parseStringWithArguments() {
             String s = "\"BBQ At the Pivotal Labs Singapore office\" on the 23rd of March at 7pm";
             TreeMap<String, String> argumentsConfig = new TreeMap<>();
-            argumentsConfig.put("event_name", "/([^\"]+)/");
+            argumentsConfig.put("event_name", "/\"([^\"]+)/");
             argumentsConfig.put("start_time", "TIMESTAMP");
 
             TreeMap result = aps.parse(s, argumentsConfig);
