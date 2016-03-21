@@ -29,7 +29,7 @@ class ArgumentParserService {
                     String match = parseRegex(s, regex);
                     s = s.replace(match, "");
                     returnMap.put(e.getKey(), match);
-                } catch (IndexOutOfBoundsException ex) {
+                } catch (IndexOutOfBoundsException|IllegalStateException ex) {
                     throw new IllegalArgumentException(
                         String.format("Argument '%s' found no match with regex '%s'", e.getKey(), regex),
                         ex
@@ -48,7 +48,7 @@ class ArgumentParserService {
     }
 
     private String parseRegex(String s, String regex) {
-        regex = (String) regex.subSequence(1, regex.length() - 1);
+        regex = String.format("^%s", (String) regex.subSequence(1, regex.length() - 1));
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(s);
         m.find();

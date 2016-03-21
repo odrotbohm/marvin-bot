@@ -106,5 +106,15 @@ public class ArgumentParserServiceTest {
 
             aps.parse(s, arguments);
         }
+
+        @Test(expected = IllegalArgumentException.class)
+        public void ensureArgumentIsMatchedFromBeginningOfString() {
+            String s = "I18N InternationalizatioN";
+            TreeMap<String, String> arguments = new TreeMap<>();
+            arguments.put("first", "/(I.{18}N)/");
+
+            aps.parse(s, arguments);
+        }
+
     }
 }
