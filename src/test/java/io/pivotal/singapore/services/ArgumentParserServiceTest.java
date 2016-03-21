@@ -98,14 +98,13 @@ public class ArgumentParserServiceTest {
         }
 
         @Test(expected = IllegalArgumentException.class)
-        public void raisesExceptionWhenNotAllPartsMatches() {
+        public void raisesExceptionWhenAPartDoesntMatch() {
             String s = "Hello 123 there";
             TreeMap<String, String> arguments = new TreeMap<>();
             arguments.put("first", "/\\w+/");
             arguments.put("second", "/\\w+/");
-            arguments.put("third", "/\\w+/");
 
-            TreeMap result = aps.parse(s, arguments);
+            aps.parse(s, arguments);
         }
     }
 }
