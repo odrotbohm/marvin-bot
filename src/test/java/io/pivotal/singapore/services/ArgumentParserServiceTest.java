@@ -11,9 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,7 +24,7 @@ public class ArgumentParserServiceTest {
     private static class BaseTest {
 
         ArgumentParserService aps = new ArgumentParserService();
-        TreeMap<String, String> argumentsConfig;
+        LinkedHashMap<String, String> argumentsConfig;
         String expectedDateTimeString;
         ZonedDateTime expectedDateTime;
 
@@ -35,7 +33,7 @@ public class ArgumentParserServiceTest {
             expectedDateTime = ZonedDateTime.of(LocalDate.of(2016, 3, 23), LocalTime.of(19, 0), ZoneId.of("+08:00"));
             expectedDateTimeString = expectedDateTime.format(ISO_OFFSET_DATE_TIME);
 
-            argumentsConfig = new TreeMap<>();
+            argumentsConfig = new LinkedHashMap<>();
             argumentsConfig.put("timestamp", "TIMESTAMP");
         }
     }
@@ -45,21 +43,21 @@ public class ArgumentParserServiceTest {
 
         @Test
         public void parseTimestringOnItsOwn() {
-            TreeMap actual = aps.parse("23rd of March at 7pm", argumentsConfig);
+            Map actual = aps.parse("23rd of March at 7pm", argumentsConfig);
 
             assertThat(actual.get("timestamp"), equalTo(expectedDateTimeString));
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void noValidTimeString() {
-            TreeMap actual = aps.parse("I'm a fluffy ballonicorn!", argumentsConfig);
+            Map actual = aps.parse("I'm a fluffy ballonicorn!", argumentsConfig);
 
             actual.get("timestamp");
         }
 
         @Test
         public void parseValidTimeStringWithOtherStuff() {
-            TreeMap actual = aps.parse("BBQ At the Pivotal Labs Singapore office on the 23rd of March at 7pm", argumentsConfig);
+            Map actual = aps.parse("BBQ At the Pivotal Labs Singapore office on the 23rd of March at 7pm", argumentsConfig);
 
             assertThat(actual.get("timestamp"), equalTo(expectedDateTimeString));
         }
@@ -80,6 +78,19 @@ public class ArgumentParserServiceTest {
                 assertThat(actual, is(nullValue()));
             }
         }
+
+        @Test
+        public void parseArgumentsShouldBeEvaluatedInOrder() {
+            String s = "23rd of March at 7pm \"BBQ At the Pivotal Labs Singapore office\"";
+            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
+            argumentsConfig.put("start_time", "TIMESTAMP");
+            argumentsConfig.put("event_name", "/\"([^\"]+)\"/");
+
+            Map result = aps.parse(s, argumentsConfig);
+
+            assertThat(result.get("start_time"), equalTo(expectedDateTimeString));
+            assertThat(result.get("event_name"), equalTo("BBQ At the Pivotal Labs Singapore office"));
+        }
     }
 
     @RunWith(MockitoJUnitRunner.class)
@@ -87,11 +98,11 @@ public class ArgumentParserServiceTest {
         @Test
         public void parseStringWithArguments() {
             String s = "\"BBQ At the Pivotal Labs Singapore office\" on the 23rd of March at 7pm";
-            TreeMap<String, String> argumentsConfig = new TreeMap<>();
+            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
             argumentsConfig.put("event_name", "/\"([^\"]+)/");
             argumentsConfig.put("start_time", "TIMESTAMP");
 
-            TreeMap result = aps.parse(s, argumentsConfig);
+            Map result = aps.parse(s, argumentsConfig);
 
             assertThat(result.get("event_name"), equalTo("BBQ At the Pivotal Labs Singapore office"));
             assertThat(result.get("start_time"), equalTo(expectedDateTimeString));
@@ -100,12 +111,12 @@ public class ArgumentParserServiceTest {
         @Test
         public void parseRemovesAllCharactersOfMatchedGroup() {
             String s = "\"BBQ At the Pivotal Labs Singapore office\" on the 23rd of March at 7pm";
-            TreeMap<String, String> argumentsConfig = new TreeMap<>();
+            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
             argumentsConfig.put("event_name", "/\"([^\"]+)\"/");
             argumentsConfig.put("the_on", "/(on )/");
             argumentsConfig.put("start_time", "TIMESTAMP");
 
-            TreeMap result = aps.parse(s, argumentsConfig);
+            Map result = aps.parse(s, argumentsConfig);
 
             assertThat(result.get("event_name"), equalTo("BBQ At the Pivotal Labs Singapore office"));
             assertThat(result.get("the_on"), equalTo("on "));
@@ -114,7 +125,7 @@ public class ArgumentParserServiceTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void parseStringWithInvalidArgumentsRaisesException() {
-            TreeMap<String, String> argumentsConfig = new TreeMap<>();
+            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
             argumentsConfig.put("event_name", "m000");
 
             aps.parse("", argumentsConfig);
@@ -123,7 +134,7 @@ public class ArgumentParserServiceTest {
         @Test(expected = IllegalArgumentException.class)
         public void raisesExceptionWhenAPartDoesntMatch() {
             String s = "Hello 123 there";
-            TreeMap<String, String> arguments = new TreeMap<>();
+            LinkedHashMap<String, String> arguments = new LinkedHashMap<>();
             arguments.put("first", "/\\w+/");
             arguments.put("second", "/\\w+/");
 
@@ -133,7 +144,7 @@ public class ArgumentParserServiceTest {
         @Test(expected = IllegalArgumentException.class)
         public void ensureArgumentIsMatchedFromBeginningOfString() {
             String s = "I18N InternationalizatioN";
-            TreeMap<String, String> arguments = new TreeMap<>();
+            LinkedHashMap<String, String> arguments = new LinkedHashMap<>();
             arguments.put("first", "/(I.{18}N)/");
 
             aps.parse(s, arguments);
@@ -142,11 +153,11 @@ public class ArgumentParserServiceTest {
         @Test
         public void ensureLineIsTrimmedFromLeadingAndTrailingWhitespace() {
             String s = "     Hello   There    ";
-            TreeMap<String, String> arguments = new TreeMap<>();
+            LinkedHashMap<String, String> arguments = new LinkedHashMap<>();
             arguments.put("first", "/(Hello)/");
             arguments.put("second", "/(There)/");
 
-            TreeMap result = aps.parse(s, arguments);
+            Map result = aps.parse(s, arguments);
 
             assertThat(result.get("first"), equalTo("Hello"));
             assertThat(result.get("second"), equalTo("There"));

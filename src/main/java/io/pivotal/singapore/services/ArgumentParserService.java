@@ -19,7 +19,7 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 @Service
 class ArgumentParserService {
 
-    TreeMap parse(String rawCommand, TreeMap<String, String> argumentsConfig) {
+    Map parse(String rawCommand, LinkedHashMap<String, String> argumentsConfig) {
         TreeMap<String, String> returnMap = new TreeMap<>();
 
         for (Map.Entry<String, String> captureGroup : argumentsConfig.entrySet()) {
@@ -31,7 +31,9 @@ class ArgumentParserService {
                 rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
                 returnMap.put(captureGroup.getKey(), match.last);
             } else if (regex.equals("TIMESTAMP")) {
-                returnMap.put(captureGroup.getKey(), parseTimestamp(rawCommand, captureGroup));
+                Pair<Integer, String> match = parseTimestamp(rawCommand, captureGroup);
+                rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
+                returnMap.put(captureGroup.getKey(), match.last);
             } else {
                 throw new IllegalArgumentException(
                     String.format("The argument '%s' for '%s' is not valid", regex, captureGroup.getKey())
@@ -62,10 +64,12 @@ class ArgumentParserService {
     }
 
     // TODO: Maybe not hardcode in Singapore here?
-    private String parseTimestamp(String rawCommand, Map.Entry captureGroup) throws IllegalArgumentException {
+    private Pair<Integer, String> parseTimestamp(String rawCommand, Map.Entry captureGroup) throws IllegalArgumentException {
         List<DateGroup> parse = new PrettyTimeParser().parseSyntax(rawCommand);
         if (parse != null && !parse.isEmpty()) {
-            Date d = parse.get(0).getDates().get(0);
+            DateGroup dateGroup = parse.get(0);
+            Date d = dateGroup.getDates().get(0);
+            Integer charactersToRemove = dateGroup.getPosition() + dateGroup.getText().length();
             ZoneId defaultTimezone = ZoneId.of("+08:00");
 
             /* $)(&*%)(@# Timezones.
@@ -92,7 +96,7 @@ class ArgumentParserService {
                 zonedDateTime = zonedDateTime.withZoneSameInstant(defaultTimezone);
             }
 
-            return zonedDateTime.format(ISO_OFFSET_DATE_TIME);
+            return new Pair<>(charactersToRemove, zonedDateTime.format(ISO_OFFSET_DATE_TIME));
         } else {
             throw new IllegalArgumentException(
                 String.format("Argument '%s' found no match for '%s' in text '%s'", captureGroup.getKey(), captureGroup.getValue(), rawCommand)
