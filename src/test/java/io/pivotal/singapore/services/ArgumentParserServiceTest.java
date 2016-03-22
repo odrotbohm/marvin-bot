@@ -1,5 +1,6 @@
 package io.pivotal.singapore.services;
 
+import io.pivotal.singapore.utils.ThrowableCatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -13,7 +14,6 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 
 @RunWith(Enclosed.class)
@@ -71,7 +71,8 @@ public class ArgumentParserServiceTest {
             );
 
             for (String validString : validStrings) {
-                assertThat(aps.parse(validString, argumentsConfig).get("timestamp"), is(notNullValue()));
+                Throwable actual = ThrowableCatcher.capture(() -> aps.parse(validString, argumentsConfig));
+                assertThat(actual, is(nullValue()));
             }
         }
     }
