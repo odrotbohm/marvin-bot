@@ -97,6 +97,21 @@ public class ArgumentParserServiceTest {
             assertThat(result.get("start_time"), equalTo(expectedDateTimeString));
         }
 
+        @Test
+        public void parseRemovesAllCharactersOfMatchedGroup() {
+            String s = "\"BBQ At the Pivotal Labs Singapore office\" on the 23rd of March at 7pm";
+            TreeMap<String, String> argumentsConfig = new TreeMap<>();
+            argumentsConfig.put("event_name", "/\"([^\"]+)\"/");
+            argumentsConfig.put("the_on", "/(on )/");
+            argumentsConfig.put("start_time", "TIMESTAMP");
+
+            TreeMap result = aps.parse(s, argumentsConfig);
+
+            assertThat(result.get("event_name"), equalTo("BBQ At the Pivotal Labs Singapore office"));
+            assertThat(result.get("the_on"), equalTo("on "));
+            assertThat(result.get("start_time"), equalTo(expectedDateTimeString));
+        }
+
         @Test(expected = IllegalArgumentException.class)
         public void parseStringWithInvalidArgumentsRaisesException() {
             TreeMap<String, String> argumentsConfig = new TreeMap<>();

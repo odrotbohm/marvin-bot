@@ -1,10 +1,10 @@
 package io.pivotal.singapore.services;
 
+import io.pivotal.singapore.utils.Pair;
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -27,9 +27,9 @@ class ArgumentParserService {
             rawCommand = rawCommand.trim();
 
             if (regex.startsWith("/")) {
-                String match = parseRegex(rawCommand, captureGroup);
-                rawCommand = rawCommand.replace(match, "");
-                returnMap.put(captureGroup.getKey(), match);
+                Pair<Integer, String> match = parseRegex(rawCommand, captureGroup);
+                rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
+                returnMap.put(captureGroup.getKey(), match.last);
             } else if (regex.equals("TIMESTAMP")) {
                 returnMap.put(captureGroup.getKey(), parseTimestamp(rawCommand, captureGroup));
             } else {
@@ -42,7 +42,7 @@ class ArgumentParserService {
         return returnMap;
     }
 
-    private String parseRegex(String rawCommand, Map.Entry captureGroup) throws IllegalArgumentException {
+    private Pair<Integer, String> parseRegex(String rawCommand, Map.Entry captureGroup) throws IllegalArgumentException {
         String regex = (String) captureGroup.getValue();
         regex = String.format("^%s", (String) regex.subSequence(1, regex.length() - 1));
         Pattern p = Pattern.compile(regex);
@@ -52,10 +52,10 @@ class ArgumentParserService {
             m.find();
             MatchResult results = m.toMatchResult();
 
-            return results.group(1);
+            return new Pair<>(m.end(0), results.group(1));
         } catch (IndexOutOfBoundsException | IllegalStateException ex) {
             throw new IllegalArgumentException(
-                String.format("Argument '%s' found no match with regex '%s'", captureGroup.getKey(), regex),
+                String.format("Argument '%s' found no match with regex '%s' in '%s'", captureGroup.getKey(), regex, rawCommand),
                 ex
             );
         }
