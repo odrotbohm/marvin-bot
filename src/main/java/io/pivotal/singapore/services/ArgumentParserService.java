@@ -23,26 +23,19 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 @Service
 class ArgumentParserService {
 
-    TreeMap parse(String s, TreeMap<String, String> argumentsConfig) {
+    TreeMap parse(String rawCommand, TreeMap<String, String> argumentsConfig) {
         TreeMap<String, String> returnMap = new TreeMap<>();
 
         for (Map.Entry<String, String> e : argumentsConfig.entrySet()) {
             String regex = e.getValue();
-            s = s.trim();
+            rawCommand = rawCommand.trim();
 
             if (regex.startsWith("/")) {
-                try {
-                    String match = parseRegex(s, regex);
-                    s = s.replace(match, "");
-                    returnMap.put(e.getKey(), match);
-                } catch (IndexOutOfBoundsException|IllegalStateException ex) {
-                    throw new IllegalArgumentException(
-                        String.format("Argument '%s' found no match with regex '%s'", e.getKey(), regex),
-                        ex
-                    );
-                }
+                String match = parseRegex(rawCommand, e);
+                rawCommand = rawCommand.replace(match, "");
+                returnMap.put(e.getKey(), match);
             } else if (regex.equals("TIMESTAMP")) {
-                returnMap.put(e.getKey(), parseTimestamp(s));
+                returnMap.put(e.getKey(), parseTimestamp(rawCommand));
             } else {
                 throw new IllegalArgumentException(
                     String.format("The argument '%s' for '%s' is not valid", regex, e.getKey())
@@ -53,14 +46,23 @@ class ArgumentParserService {
         return returnMap;
     }
 
-    private String parseRegex(String s, String regex) {
+    private String parseRegex(String rawCommand, Map.Entry captureGroup) throws IllegalArgumentException {
+        String regex = (String) captureGroup.getValue();
         regex = String.format("^%s", (String) regex.subSequence(1, regex.length() - 1));
         Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(s);
-        m.find();
-        MatchResult results = m.toMatchResult();
+        Matcher m = p.matcher(rawCommand);
 
-        return results.group(1);
+        try {
+            m.find();
+            MatchResult results = m.toMatchResult();
+
+            return results.group(1);
+        } catch (IndexOutOfBoundsException | IllegalStateException ex) {
+            throw new IllegalArgumentException(
+                String.format("Argument '%s' found no match with regex '%s'", captureGroup.getKey(), regex),
+                ex
+            );
+        }
     }
 
     // TODO: Maybe not hardcode in Singapore here?
