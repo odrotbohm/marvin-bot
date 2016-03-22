@@ -7,8 +7,13 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.time.*;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.TreeMap;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,11 +50,11 @@ public class ArgumentParserServiceTest {
             assertThat(actual.get("timestamp"), equalTo(expectedDateTimeString));
         }
 
-        @Test
+        @Test(expected = IllegalArgumentException.class)
         public void noValidTimeString() {
             TreeMap actual = aps.parse("I'm a fluffy ballonicorn!", argumentsConfig);
 
-            assertThat(actual.get("timestamp"), is(nullValue()));
+            actual.get("timestamp");
         }
 
         @Test

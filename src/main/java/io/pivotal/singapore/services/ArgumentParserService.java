@@ -8,11 +8,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,19 +22,19 @@ class ArgumentParserService {
     TreeMap parse(String rawCommand, TreeMap<String, String> argumentsConfig) {
         TreeMap<String, String> returnMap = new TreeMap<>();
 
-        for (Map.Entry<String, String> e : argumentsConfig.entrySet()) {
-            String regex = e.getValue();
+        for (Map.Entry<String, String> captureGroup : argumentsConfig.entrySet()) {
+            String regex = captureGroup.getValue();
             rawCommand = rawCommand.trim();
 
             if (regex.startsWith("/")) {
-                String match = parseRegex(rawCommand, e);
+                String match = parseRegex(rawCommand, captureGroup);
                 rawCommand = rawCommand.replace(match, "");
-                returnMap.put(e.getKey(), match);
+                returnMap.put(captureGroup.getKey(), match);
             } else if (regex.equals("TIMESTAMP")) {
-                returnMap.put(e.getKey(), parseTimestamp(rawCommand));
+                returnMap.put(captureGroup.getKey(), parseTimestamp(rawCommand, captureGroup));
             } else {
                 throw new IllegalArgumentException(
-                    String.format("The argument '%s' for '%s' is not valid", regex, e.getKey())
+                    String.format("The argument '%s' for '%s' is not valid", regex, captureGroup.getKey())
                 );
             }
         }
@@ -66,8 +62,8 @@ class ArgumentParserService {
     }
 
     // TODO: Maybe not hardcode in Singapore here?
-    private String parseTimestamp(String s) {
-        List<DateGroup> parse = new PrettyTimeParser().parseSyntax(s);
+    private String parseTimestamp(String rawCommand, Map.Entry captureGroup) throws IllegalArgumentException {
+        List<DateGroup> parse = new PrettyTimeParser().parseSyntax(rawCommand);
         if (parse != null && !parse.isEmpty()) {
             Date d = parse.get(0).getDates().get(0);
             ZoneId defaultTimezone = ZoneId.of("+08:00");
@@ -98,7 +94,9 @@ class ArgumentParserService {
 
             return zonedDateTime.format(ISO_OFFSET_DATE_TIME);
         } else {
-            return null;
+            throw new IllegalArgumentException(
+                String.format("Argument '%s' found no match for '%s' in text '%s'", captureGroup.getKey(), captureGroup.getValue(), rawCommand)
+            );
         }
     }
 
