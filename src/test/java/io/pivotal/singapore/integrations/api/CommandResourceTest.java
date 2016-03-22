@@ -98,7 +98,7 @@ public class CommandResourceTest {
     @Test
     public void testCommandsUpdateViaName() throws Exception {
         JSONObject originalJson = new JSONObject()
-                .put("name", "command")
+                .put("name", "foobar")
                 .put("endpoint", "http://localhost/9")
                 .put("method", "GET");
 
@@ -118,11 +118,14 @@ public class CommandResourceTest {
         when().
                 post("/api/v1/commands/").
         then().
-                statusCode(SC_CONFLICT);
+                statusCode(SC_CREATED);
 
         when().
                 get("/api/v1/commands/").
         then().
-                content("page.totalElements", equalTo(1));
+                content("page.totalElements", equalTo(1)).
+                body("_embedded.commands[0].name", is("foobar")).
+                body("_embedded.commands[0].endpoint", is("http://localhost/9")).
+                body("_embedded.commands[0].method", is("POST"));
     }
 }
