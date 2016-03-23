@@ -1,5 +1,7 @@
 package io.pivotal.singapore.models;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.*;
@@ -11,12 +13,13 @@ public class Command {
     @Id
     @SequenceGenerator(name = "pk_sequence", sequenceName = "commands_id_seq")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_sequence")
-    private long id;
-    @Column(unique = true)
-    private String name;
-    private String endpoint;
+    @Getter @Setter private long id;
 
-    private RequestMethod method;
+    @Column(unique = true)
+    @Getter @Setter private String name;
+    @Getter @Setter private String endpoint;
+
+    @Getter @Setter private RequestMethod method;
 
     public Command(String name, String endpoint) {
         this.name = name;
@@ -25,37 +28,4 @@ public class Command {
     }
 
     public Command() {} // to make JPA happy....
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
-    public RequestMethod getMethod() {
-        return method;
-    }
-
-    public void setMethod(RequestMethod method) {
-        this.method = method;
-    }
-
 }
