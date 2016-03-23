@@ -5,6 +5,7 @@ import com.jayway.restassured.http.ContentType;
 import io.pivotal.singapore.MarvinApplication;
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.repositories.CommandRepository;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -18,15 +19,16 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.HashMap;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
-import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = MarvinApplication.class)
@@ -124,5 +126,42 @@ public class CommandResourceTest {
                 body("_embedded.commands[0].name", is("foobar")).
                 body("_embedded.commands[0].endpoint", is("http://localhost/9")).
                 body("_embedded.commands[0].method", is("POST"));
+    }
+
+    @Test
+    public void testCommandCreationWithSubCommands() {
+        JSONArray subCommands = new JSONArray();
+
+        HashMap<String, String> args = new HashMap<>();
+        args.put("arg1", "form1");
+        JSONObject subCommandObject = new JSONObject()
+                .put("name", "bar")
+                .put("endpoint", "/bar")
+                .put("method", "POST")
+                .put("arguments", args);
+
+        subCommands.put(subCommandObject);
+
+
+        JSONObject json = new JSONObject()
+                .put("name", "pity the fool")
+                .put("endpoint", "http://localhost/9")
+                .put("method", "GET")
+                .put("subCommands", subCommands);
+
+        given().
+                log().all().
+                contentType(ContentType.JSON).
+                content(json.toString()).
+        when().
+                log().all().
+                post("/api/v1/commands/").
+        then().
+                log().all().
+                statusCode(SC_CREATED).
+                body("subCommands[0].name", is("bar")).
+                body("subCommands[0].method", is("POST")).
+                body("subCommands[0].endpoint", is("/bar")).
+                body("subCommands[0].arguments.arg1", is("form1"));
     }
 }
