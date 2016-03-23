@@ -3,6 +3,7 @@ package io.pivotal.singapore.models;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "commands")
@@ -17,6 +18,10 @@ public class Command {
     private String endpoint;
 
     private RequestMethod method;
+
+    @OneToMany(cascade = {CascadeType.ALL})
+    @JoinColumn(name="COMMAND_ID", referencedColumnName="ID")
+    public List<SubCommand> subCommands;
 
     public Command(String name, String endpoint) {
         this.name = name;
@@ -58,4 +63,11 @@ public class Command {
         this.method = method;
     }
 
+    public List<SubCommand> getSubCommands() {
+        return subCommands;
+    }
+
+    public void setSubCommands(List<SubCommand> subCommands) {
+        this.subCommands = subCommands;
+    }
 }
