@@ -57,3 +57,13 @@ CREATE UNIQUE INDEX uk_py1b1n9yenhsrtlh4gj3p7b4g ON commands (name);
 
 
 [Flyway]: https://flywaydb.org/
+
+# Build failing from mossing accessors?
+
+It's probably because IntelliJ hasn't been configured to support annotation processors.
+
+Do so by:
+
+1. Opening the settings window for "Annotation processors"
+2. Click "Enable annotation processors"
+3. Recompile the entire project
