@@ -4,16 +4,17 @@ import io.pivotal.singapore.MarvinApplication;
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.repositories.CommandRepository;
 import io.pivotal.singapore.services.RemoteApiService;
+import io.pivotal.singapore.utils.FrozenTimeMachine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -21,6 +22,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -74,43 +77,53 @@ public class SlackControllerTest {
         @Mock
         private RemoteApiService remoteApiService;
 
+        @Spy
+        private FrozenTimeMachine clock;
+
         @InjectMocks
         private SlackController controller;
 
-        private HashMap<String, String> params;
+        private HashMap<String, String> slackInputParams;
 
         private Command command;
         private Optional<Command> optionalCommand;
 
-        private Map<String, String> defaultResponse;
+        private Map<String, String> response;
+        private Map<String, String> apiServiceParams;
 
         @Before
         public void setUp() {
             command = new Command("time", "http://somesuch.tld/api/time/");
             optionalCommand = Optional.of(command);
 
-            params = new HashMap<>();
-            params.put("token", "gIkuvaNzQIHg97ATvDxqgjtO");
-            params.put("team_id", "T0001");
-            params.put("team_domain", "example");
-            params.put("channel_id", "C2147483705");
-            params.put("channel_name", "test");
-            params.put("user_id", "U2147483697");
-            params.put("user_name", "Steve");
-            params.put("command", "/marvin");
-            params.put("text", "time");
-            params.put("response_url", "https://hooks.slack.com/commands/1234/5678");
+            slackInputParams = new HashMap<>();
+            slackInputParams.put("token", "gIkuvaNzQIHg97ATvDxqgjtO");
+            slackInputParams.put("team_id", "T0001");
+            slackInputParams.put("team_domain", "example");
+            slackInputParams.put("channel_id", "C2147483705");
+            slackInputParams.put("channel_name", "test");
+            slackInputParams.put("user_id", "U2147483697");
+            slackInputParams.put("user_name", "Steve");
+            slackInputParams.put("command", "/marvin");
+            slackInputParams.put("text", "time");
+            slackInputParams.put("response_url", "https://hooks.slack.com/commands/1234/5678");
 
-            defaultResponse = new HashMap<>();
-            defaultResponse.put("response_type", "ephemeral");
-            defaultResponse.put("text", "This will all end in tears.");
+            apiServiceParams = new HashMap<>();
+            apiServiceParams.put("user", "Steve@pivotal.io");
+            apiServiceParams.put("channel", "test");
+            apiServiceParams.put("received_at", ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+            apiServiceParams.put("command", "time");
+
+            response = new HashMap<>();
+            response.put("response_type", "ephemeral");
+            response.put("text", "This will all end in tears.");
         }
 
         @Test
         public void testReceiveTimeOfDay() {
             when(commandRepository.findOneByName("time")).thenReturn(Optional.empty());
 
-            assertThat(controller.index(params), is(equalTo(defaultResponse)));
+            assertThat(controller.index(slackInputParams), is(equalTo(response)));
         }
 
         @Test
@@ -119,30 +132,29 @@ public class SlackControllerTest {
 
             HashMap<String, String> serviceResponse = new HashMap<>();
             String australiaTime = "The time in Australia is Beer o'clock.";
-            serviceResponse.put("status", australiaTime);
-            when(remoteApiService.call(command, params)).thenReturn(serviceResponse);
+            serviceResponse.put("message", australiaTime);
+            when(remoteApiService.call(command, apiServiceParams)).thenReturn(serviceResponse);
 
-            Map<String, String> response = controller.index(params);
+            Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(australiaTime)));
             verify(commandRepository, times(1)).findOneByName("time");
-            verify(remoteApiService, times(1)).call(command, params);
+            verify(remoteApiService, times(1)).call(command, apiServiceParams);
         }
 
         @Test
         public void findsCommandWhenItHasArguments() {
-            params.put("text", "time england");
+            slackInputParams.put("text", "time england");
+            apiServiceParams.put("command", "time england");
 
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
             HashMap<String, String> serviceResponse = new HashMap<>();
             String englandTime = "The time in England is Tea o'clock.";
-            serviceResponse.put("status", englandTime);
-            when(remoteApiService.call(command, params)).thenReturn(serviceResponse);
+            serviceResponse.put("message", englandTime);
+            when(remoteApiService.call(command, apiServiceParams)).thenReturn(serviceResponse);
 
-            Map<String, String> response = controller.index(params);
+            Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(englandTime)));
-            verify(commandRepository, times(1)).findOneByName("time");
-            verify(remoteApiService, times(1)).call(command, params);
         }
     }
 

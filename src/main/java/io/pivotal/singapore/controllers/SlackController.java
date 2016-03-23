@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Clock;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +24,8 @@ public class SlackController {
 
     @Autowired
     RemoteApiService remoteApiService;
+
+    private Clock clock = Clock.systemUTC();
 
     @RequestMapping(
             method = RequestMethod.GET,
@@ -34,18 +39,30 @@ public class SlackController {
             return defaultResponse();
         }
 
-        Integer firstSpace = commandText.indexOf(' ');
-        String commandName = firstSpace == -1 ? commandText : commandText.substring(0, firstSpace);
-        Optional<Command> commandOptional = commandRepository.findOneByName(commandName);
-
+        Optional<Command> commandOptional = getCommand(commandText);
         if (!commandOptional.isPresent()) {
             return defaultResponse();
         }
 
-        HashMap<String, String> response = remoteApiService.call(commandOptional.get(), params);
+        HashMap<String, String> response = remoteApiService.call(commandOptional.get(), remoteServiceParams(params));
+        return textResponse(response.get("message"));
+    }
 
+    private HashMap<String, String> remoteServiceParams(HashMap<String, String> params) {
+        HashMap<String, String> serviceParams = new HashMap<>();
+        serviceParams.put("user", String.format("%s@pivotal.io", params.get("user_name")));
+        serviceParams.put("channel", params.get("channel_name"));
+        serviceParams.put("received_at", ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+        serviceParams.put("command", params.get("text"));
 
-        return textResponse(response.get("status"));
+        return serviceParams;
+    }
+
+    private Optional<Command> getCommand(String commandText) {
+        Integer firstSpace = commandText.indexOf(' ');
+        String commandName = firstSpace == -1 ? commandText : commandText.substring(0, firstSpace);
+
+        return commandRepository.findOneByName(commandName);
     }
 
     private HashMap<String, String> textResponse(String text) {
