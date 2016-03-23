@@ -24,7 +24,7 @@ public class Command {
 
     @OneToMany(cascade = {CascadeType.ALL})
     @JoinColumn(name="COMMAND_ID", referencedColumnName="ID")
-    public List<SubCommand> subCommands;
+    @Getter @Setter List<SubCommand> subCommands;
 
     public Command(String name, String endpoint) {
         this.name = name;
@@ -33,12 +33,4 @@ public class Command {
     }
 
     public Command() {} // to make JPA happy....
-
-    public List<SubCommand> getSubCommands() {
-        return subCommands;
-    }
-
-    public void setSubCommands(List<SubCommand> subCommands) {
-        this.subCommands = subCommands;
-    }
 }
