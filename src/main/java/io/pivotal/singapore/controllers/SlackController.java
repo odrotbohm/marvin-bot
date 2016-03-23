@@ -4,6 +4,7 @@ import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.repositories.CommandRepository;
 import io.pivotal.singapore.services.RemoteApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.composed.web.rest.json.GetJson;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,12 +27,8 @@ public class SlackController {
     RemoteApiService remoteApiService;
 
     private Clock clock = Clock.systemUTC();
-
-    @RequestMapping(
-            method = RequestMethod.GET,
-            value = "/",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    
+    @GetJson("/")
     public Map<String, String> index(@RequestParam HashMap<String, String> params) {
         String commandText = params.get("text");
 
