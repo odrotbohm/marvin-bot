@@ -41,12 +41,9 @@ public class CommandResourceTest {
     @Value("${local.server.port}")
     protected int port;
 
-    private MockMvc mockMvc;
-
     @Before
     public void setUp() throws Exception {
         RestAssured.port = port;
-        mockMvc = webAppContextSetup(wac).build();
     }
 
     @After
