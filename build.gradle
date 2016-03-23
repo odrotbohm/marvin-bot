@@ -4,6 +4,7 @@ buildscript {
     }
     repositories {
         mavenCentral()
+        maven { url "https://repo.spring.io/snapshot/" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -23,6 +24,7 @@ targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven { url "https://repo.spring.io/snapshot" }
 }
 
 
@@ -34,6 +36,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-devtools')
     compile('org.flywaydb:flyway-core:4.0')
     compile('org.ocpsoft.prettytime:prettytime-nlp:4.0.0.Final')
+    compile('org.projectlombok:lombok:1.16.8')
+    compile('org.springframework.composed:spring-composed:1.0.0.BUILD-SNAPSHOT')
     runtime('org.postgresql:postgresql')
 
     testCompile('com.jayway.restassured:rest-assured:2.9.0')
