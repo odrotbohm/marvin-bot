@@ -41,7 +41,7 @@ public class RemoteApiServiceTest {
         mockServer.expect(requestTo("http://example.com/"))
             .andExpect(method(HttpMethod.POST))
             .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
-        HashMap <String, String> result = remoteApiService.call(command, params);
+        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
 
         assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
         mockServer.verify();

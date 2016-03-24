@@ -1,7 +1,9 @@
 package io.pivotal.singapore.services;
 
 import io.pivotal.singapore.models.Command;
+import io.pivotal.singapore.models.SubCommand;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -19,13 +21,13 @@ public class RemoteApiService {
         restTemplate = _restTemplate;
     }
 
-    public HashMap<String, String> call(Command command, Map params) {
-        switch (command.getMethod()) {
+    public HashMap<String, String> call(RequestMethod method, String endpoint, Map params) {
+        switch (method) {
             case POST:
-                return restTemplate.postForObject(command.getEndpoint(), params, HashMap.class);
+                return restTemplate.postForObject(endpoint, params, HashMap.class);
             default:
                 throw new IllegalArgumentException(
-                    String.format("HTTP method '%s' not supported.", command.getMethod())
+                    String.format("HTTP method '%s' not supported.", method)
                 );
         }
     }

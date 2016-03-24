@@ -18,6 +18,7 @@ public class CommandTest {
         assertThat(command.getName(), is("name"));
         assertThat(command.getEndpoint(), is("endpoint"));
         assertThat(command.getMethod(), is(RequestMethod.POST));
+        assertThat(command.getSubCommands(), is(new ArrayList<>()));
     }
 
     @Test
@@ -37,6 +38,7 @@ public class CommandTest {
 
         assertThat(command.findSubCommand("in").get(), is(subCommand));
         assertThat(command.findSubCommand("missing"), is(Optional.empty()));
+        assertThat(command.findSubCommand(null), is(Optional.empty()));
 
     }
 }

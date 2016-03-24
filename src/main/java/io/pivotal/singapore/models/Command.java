@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,7 @@ public class Command {
         this.name = name;
         this.endpoint = endpoint;
         this.method = RequestMethod.POST;
+        this.subCommands = new ArrayList<>();
     }
 
     public Command() {} // to make JPA happy....

@@ -1,13 +1,12 @@
 package io.pivotal.singapore.controllers;
 
 import io.pivotal.singapore.models.Command;
+import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
+import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.composed.web.rest.json.GetJson;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,8 +25,11 @@ public class SlackController {
     @Autowired
     RemoteApiService remoteApiService;
 
+    @Autowired
+    CommandParserService commandParserService;
+
     private Clock clock = Clock.systemUTC();
-    
+
     @GetJson("/")
     public Map<String, String> index(@RequestParam HashMap<String, String> params) {
         String commandText = params.get("text");
@@ -36,13 +38,28 @@ public class SlackController {
             return defaultResponse();
         }
 
-        Optional<Command> commandOptional = getCommand(commandText);
+        HashMap<String, String> parsedCommand = commandParserService.parse(commandText);
+
+        Optional<Command> commandOptional = getCommand(parsedCommand.get("command"));
         if (!commandOptional.isPresent()) {
             return defaultResponse();
         }
 
-        HashMap<String, String> response = remoteApiService.call(commandOptional.get(), remoteServiceParams(params));
+        HashMap<String, String> response;
+        Optional<SubCommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
+        if (!subCommandOptional.isPresent()) {
+            Command command = commandOptional.get();
+            response = remoteApiService.call(command.getMethod(), command.getEndpoint(), remoteServiceParams(params));
+        } else {
+            SubCommand subCommand = subCommandOptional.get();
+            response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), remoteServiceParams(params));
+        }
+
         return textResponse(response.get("message"));
+    }
+
+    private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {
+        return commandOptional.flatMap((c)-> c.findSubCommand(subCommandText));
     }
 
     private HashMap<String, String> remoteServiceParams(HashMap<String, String> params) {
@@ -55,10 +72,7 @@ public class SlackController {
         return serviceParams;
     }
 
-    private Optional<Command> getCommand(String commandText) {
-        Integer firstSpace = commandText.indexOf(' ');
-        String commandName = firstSpace == -1 ? commandText : commandText.substring(0, firstSpace);
-
+    private Optional<Command> getCommand(String commandName) {
         return commandRepository.findOneByName(commandName);
     }
 

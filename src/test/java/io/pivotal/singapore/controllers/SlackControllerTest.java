@@ -2,7 +2,9 @@ package io.pivotal.singapore.controllers;
 
 import io.pivotal.singapore.MarvinApplication;
 import io.pivotal.singapore.models.Command;
+import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
+import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.FrozenTimeMachine;
 import org.junit.Before;
@@ -24,9 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -79,6 +79,9 @@ public class SlackControllerTest {
 
         @Spy
         private FrozenTimeMachine clock;
+
+        @Spy
+        private CommandParserService commandParserService;
 
         @InjectMocks
         private SlackController controller;
@@ -133,12 +136,12 @@ public class SlackControllerTest {
             HashMap<String, String> serviceResponse = new HashMap<>();
             String australiaTime = "The time in Australia is Beer o'clock.";
             serviceResponse.put("message", australiaTime);
-            when(remoteApiService.call(command, apiServiceParams)).thenReturn(serviceResponse);
+            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(serviceResponse);
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(australiaTime)));
             verify(commandRepository, times(1)).findOneByName("time");
-            verify(remoteApiService, times(1)).call(command, apiServiceParams);
+            verify(remoteApiService, times(1)).call(command.getMethod(), command.getEndpoint(), apiServiceParams);
         }
 
         @Test
@@ -151,10 +154,27 @@ public class SlackControllerTest {
             HashMap<String, String> serviceResponse = new HashMap<>();
             String englandTime = "The time in England is Tea o'clock.";
             serviceResponse.put("message", englandTime);
-            when(remoteApiService.call(command, apiServiceParams)).thenReturn(serviceResponse);
+            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(serviceResponse);
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(englandTime)));
+        }
+
+        @Test
+        public void findsSubCommandsWhenItHasThem() {
+            slackInputParams.put("text", "time in London");
+            apiServiceParams.put("command", "time in London");
+
+            SubCommand subCommand = new SubCommand();
+            subCommand.setName("in");
+
+            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+
+            List<SubCommand> subCommands = new ArrayList<>();
+            subCommands.add(subCommand);
+            command.setSubCommands(subCommands);
+            Map<String, String> response = controller.index(slackInputParams);
+            verify(remoteApiService).call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams);
         }
     }
 
