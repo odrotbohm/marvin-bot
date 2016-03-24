@@ -1,35 +1,29 @@
 package io.pivotal.singapore.models;
 
-import lombok.Getter;
-import lombok.Setter;
+import io.pivotal.singapore.repositories.converters.ArgumentListConverter;
+import lombok.Data;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.*;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Entity
+@Data
 @Table(name = "sub_commands")
 public class SubCommand {
     @Id
     @SequenceGenerator(name = "pk_sequence", sequenceName = "commands_id_seq")
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pk_sequence")
-    @Getter @Setter private long id;
+    private long id;
 
-    @Getter @Setter private String name;
+    private String name;
 
-    @Getter @Setter private String endpoint;
+    private String endpoint;
 
-    @Getter @Setter private RequestMethod method;
+    private RequestMethod method;
 
-    @ElementCollection
-    @MapKeyColumn(name="name")
-    @Column(name="value")
-    @CollectionTable(name="sub_command_arguments", joinColumns=@JoinColumn(name="sub_command_id"))
-    @Getter private Map<String, String> arguments;
-
-    public void setArguments(LinkedHashMap<String, String> arguments) {
-        this.arguments = arguments;
-    }
+    @Convert(converter = ArgumentListConverter.class)
+    private List<Map<String,String>> arguments;
 
 }

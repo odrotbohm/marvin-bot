@@ -22,6 +22,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
@@ -131,14 +132,25 @@ public class CommandResourceTest {
     @Test
     public void testCommandCreationWithSubCommands() {
         JSONArray subCommands = new JSONArray();
+        JSONArray argsArray = new JSONArray();
 
-        HashMap<String, String> args = new HashMap<>();
-        args.put("arg1", "form1");
+        HashMap<String, String> arg1 = new HashMap<>();
+        arg1.put("zzz", "form1");
+        argsArray.put(arg1);
+
+        HashMap<String, String> arg2 = new HashMap<>();
+        arg2.put("lll", "form2");
+        argsArray.put(arg2);
+
+        HashMap<String, String> arg3 = new HashMap<>();
+        arg3.put("aaa", "form3");
+        argsArray.put(arg3);
+
         JSONObject subCommandObject = new JSONObject()
                 .put("name", "bar")
                 .put("endpoint", "/bar")
                 .put("method", "POST")
-                .put("arguments", args);
+                .put("arguments", argsArray);
 
         subCommands.put(subCommandObject);
 
@@ -162,6 +174,8 @@ public class CommandResourceTest {
                 body("subCommands[0].name", is("bar")).
                 body("subCommands[0].method", is("POST")).
                 body("subCommands[0].endpoint", is("/bar")).
-                body("subCommands[0].arguments.arg1", is("form1"));
+                body("subCommands[0].arguments[0].zzz", is("form1")).
+                body("subCommands[0].arguments[1].lll", is("form2")).
+                body("subCommands[0].arguments[2].aaa", is("form3"));
     }
 }
