@@ -3,6 +3,10 @@ package io.pivotal.singapore.models;
 import org.junit.Test;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -16,4 +20,23 @@ public class CommandTest {
         assertThat(command.getMethod(), is(RequestMethod.POST));
     }
 
+    @Test
+    public void findSubCommandTest() {
+        Command command = new Command("time", "http://exampleTimeService.com");
+
+        SubCommand subCommand = new SubCommand();
+        subCommand.setName("in");
+
+        SubCommand otherSubCommand = new SubCommand();
+        otherSubCommand.setName("at");
+
+        List<SubCommand> subCommands = new ArrayList<>();
+        subCommands.add(subCommand);
+        subCommands.add(otherSubCommand);
+        command.setSubCommands(subCommands);
+
+        assertThat(command.findSubCommand("in").get(), is(subCommand));
+        assertThat(command.findSubCommand("missing"), is(Optional.empty()));
+
+    }
 }

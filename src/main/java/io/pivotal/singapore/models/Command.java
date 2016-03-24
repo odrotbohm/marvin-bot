@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Table(name = "commands")
@@ -33,4 +34,13 @@ public class Command {
     }
 
     public Command() {} // to make JPA happy....
+
+    public Optional<SubCommand> findSubCommand(String name) {
+        for(SubCommand subCommand: subCommands) {
+            if(subCommand.getName().equals(name))
+                return Optional.of(subCommand);
+        }
+
+        return Optional.empty();
+    }
 }
