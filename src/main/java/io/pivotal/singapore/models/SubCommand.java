@@ -25,5 +25,4 @@ public class SubCommand {
 
     @Convert(converter = ArgumentListConverter.class)
     private List<Map<String,String>> arguments;
-
 }

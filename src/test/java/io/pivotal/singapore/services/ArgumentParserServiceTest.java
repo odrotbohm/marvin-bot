@@ -18,13 +18,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
+import static java.util.Collections.singletonMap;
 
 @RunWith(Enclosed.class)
 public class ArgumentParserServiceTest {
     private static class BaseTest {
 
         ArgumentParserService aps = new ArgumentParserService();
-        LinkedHashMap<String, String> argumentsConfig;
+        List<Map<String, String>> argumentsConfig;
         String expectedDateTimeString;
         ZonedDateTime expectedDateTime;
 
@@ -33,13 +34,16 @@ public class ArgumentParserServiceTest {
             expectedDateTime = ZonedDateTime.of(LocalDate.of(2016, 3, 23), LocalTime.of(19, 0), ZoneId.of("+08:00"));
             expectedDateTimeString = expectedDateTime.format(ISO_OFFSET_DATE_TIME);
 
-            argumentsConfig = new LinkedHashMap<>();
-            argumentsConfig.put("timestamp", "TIMESTAMP");
+            argumentsConfig = new ArrayList<Map<String, String>>();
         }
     }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class TimeParsing extends BaseTest {
+        @Before
+        public void setUp() {
+            argumentsConfig.add(singletonMap("timestamp", "TIMESTAMP"));
+        }
 
         @Test
         public void parseTimestringOnItsOwn() {
@@ -81,10 +85,12 @@ public class ArgumentParserServiceTest {
 
         @Test
         public void parseArgumentsShouldBeEvaluatedInOrder() {
+            List <Map<String, String>> argumentsConfig = new ArrayList<Map<String, String>>();
+
             String s = "23rd of March at 7pm \"BBQ At the Pivotal Labs Singapore office\"";
-            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
-            argumentsConfig.put("start_time", "TIMESTAMP");
-            argumentsConfig.put("event_name", "/\"([^\"]+)\"/");
+
+            argumentsConfig.add(singletonMap("start_time", "TIMESTAMP"));
+            argumentsConfig.add(singletonMap("event_name", "/\"([^\"]+)\"/"));
 
             Map result = aps.parse(s, argumentsConfig);
 
@@ -98,9 +104,8 @@ public class ArgumentParserServiceTest {
         @Test
         public void parseStringWithArguments() {
             String s = "\"BBQ At the Pivotal Labs Singapore office\" on the 23rd of March at 7pm";
-            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
-            argumentsConfig.put("event_name", "/\"([^\"]+)/");
-            argumentsConfig.put("start_time", "TIMESTAMP");
+            argumentsConfig.add(singletonMap("event_name", "/\"([^\"]+)/"));
+            argumentsConfig.add(singletonMap("start_time", "TIMESTAMP"));
 
             Map result = aps.parse(s, argumentsConfig);
 
@@ -111,10 +116,9 @@ public class ArgumentParserServiceTest {
         @Test
         public void parseRemovesAllCharactersOfMatchedGroup() {
             String s = "\"BBQ At the Pivotal Labs Singapore office\" on the 23rd of March at 7pm";
-            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
-            argumentsConfig.put("event_name", "/\"([^\"]+)\"/");
-            argumentsConfig.put("the_on", "/(on )/");
-            argumentsConfig.put("start_time", "TIMESTAMP");
+            argumentsConfig.add(singletonMap("event_name", "/\"([^\"]+)\"/"));
+            argumentsConfig.add(singletonMap("the_on", "/(on )/"));
+            argumentsConfig.add(singletonMap("start_time", "TIMESTAMP"));
 
             Map result = aps.parse(s, argumentsConfig);
 
@@ -125,8 +129,7 @@ public class ArgumentParserServiceTest {
 
         @Test(expected = IllegalArgumentException.class)
         public void parseStringWithInvalidArgumentsRaisesException() {
-            LinkedHashMap<String, String> argumentsConfig = new LinkedHashMap<>();
-            argumentsConfig.put("event_name", "m000");
+            argumentsConfig.add(singletonMap("event_name", "m000"));
 
             aps.parse("", argumentsConfig);
         }
@@ -134,30 +137,27 @@ public class ArgumentParserServiceTest {
         @Test(expected = IllegalArgumentException.class)
         public void raisesExceptionWhenAPartDoesntMatch() {
             String s = "Hello 123 there";
-            LinkedHashMap<String, String> arguments = new LinkedHashMap<>();
-            arguments.put("first", "/\\w+/");
-            arguments.put("second", "/\\w+/");
+            argumentsConfig.add(singletonMap("first", "/\\w+/"));
+            argumentsConfig.add(singletonMap("second", "/\\w+/"));
 
-            aps.parse(s, arguments);
+            aps.parse(s, argumentsConfig);
         }
 
         @Test(expected = IllegalArgumentException.class)
         public void ensureArgumentIsMatchedFromBeginningOfString() {
             String s = "I18N InternationalizatioN";
-            LinkedHashMap<String, String> arguments = new LinkedHashMap<>();
-            arguments.put("first", "/(I.{18}N)/");
+            argumentsConfig.add(singletonMap("first", "/(I.{18}N)/"));
 
-            aps.parse(s, arguments);
+            aps.parse(s, argumentsConfig);
         }
 
         @Test
         public void ensureLineIsTrimmedFromLeadingAndTrailingWhitespace() {
             String s = "     Hello   There    ";
-            LinkedHashMap<String, String> arguments = new LinkedHashMap<>();
-            arguments.put("first", "/(Hello)/");
-            arguments.put("second", "/(There)/");
+            argumentsConfig.add(singletonMap("first", "/(Hello)/"));
+            argumentsConfig.add(singletonMap("second", "/(There)/"));
 
-            Map result = aps.parse(s, arguments);
+            Map result = aps.parse(s, argumentsConfig);
 
             assertThat(result.get("first"), equalTo("Hello"));
             assertThat(result.get("second"), equalTo("There"));

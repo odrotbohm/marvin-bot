@@ -19,25 +19,27 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 @Service
 class ArgumentParserService {
 
-    Map parse(String rawCommand, LinkedHashMap<String, String> argumentsConfig) {
+    Map parse(String rawCommand, List<Map<String, String>> argumentsConfig) {
         TreeMap<String, String> returnMap = new TreeMap<>();
 
-        for (Map.Entry<String, String> captureGroup : argumentsConfig.entrySet()) {
-            String regex = captureGroup.getValue();
-            rawCommand = rawCommand.trim();
+        for(Map<String, String> argsMap: argumentsConfig) {
+            for (Map.Entry<String, String> captureGroup : argsMap.entrySet()) {
+                String regex = captureGroup.getValue();
+                rawCommand = rawCommand.trim();
 
-            if (regex.startsWith("/")) {
-                Pair<Integer, String> match = parseRegex(rawCommand, captureGroup);
-                rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
-                returnMap.put(captureGroup.getKey(), match.last);
-            } else if (regex.equals("TIMESTAMP")) {
-                Pair<Integer, String> match = parseTimestamp(rawCommand, captureGroup);
-                rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
-                returnMap.put(captureGroup.getKey(), match.last);
-            } else {
-                throw new IllegalArgumentException(
-                    String.format("The argument '%s' for '%s' is not valid", regex, captureGroup.getKey())
-                );
+                if (regex.startsWith("/")) {
+                    Pair<Integer, String> match = parseRegex(rawCommand, captureGroup);
+                    rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
+                    returnMap.put(captureGroup.getKey(), match.last);
+                } else if (regex.equals("TIMESTAMP")) {
+                    Pair<Integer, String> match = parseTimestamp(rawCommand, captureGroup);
+                    rawCommand = rawCommand.subSequence(match.first, rawCommand.length()).toString();
+                    returnMap.put(captureGroup.getKey(), match.last);
+                } else {
+                    throw new IllegalArgumentException(
+                            String.format("The argument '%s' for '%s' is not valid", regex, captureGroup.getKey())
+                    );
+                }
             }
         }
 
