@@ -32,7 +32,7 @@ public class SlackController {
     public Map<String, String> index(@RequestParam HashMap<String, String> params) {
         String commandText = params.get("text");
 
-        if (commandText.isEmpty()) {
+        if (commandText == null || commandText.isEmpty()) {
             return defaultResponse();
         }
 
