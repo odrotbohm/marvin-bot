@@ -18,14 +18,17 @@ public class MockConsumerController {
     public Map<String, Object> index(@RequestBody Map<String, Object> params) {
 
         Map<String, String> arguments = (Map) params.get("arguments");
+        String time = "Its " + new Date();
+
+        if(arguments == null) {
+            return Collections.singletonMap("message", time);
+        }
 
         String location = arguments.get("location");
-        String time;
         if(location.equals("England")) time = "It is Tea 'o' Clock";
         else if(location.equals("Australia")) time = "It's Beer 'o' Clock";
         else if(location.equals("Russia")) time = "It'z Vodka 'o' Clock";
 
-        else time = "Its " + new Date();
 
         return Collections.singletonMap("message", time);
     }
