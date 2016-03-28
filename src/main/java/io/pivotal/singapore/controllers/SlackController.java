@@ -72,7 +72,7 @@ public class SlackController {
 
     private HashMap<String, Object> remoteServiceParams(HashMap<String, String> params) {
         HashMap<String, Object> serviceParams = new HashMap<>();
-        serviceParams.put("user", String.format("%s@pivotal.io", params.get("user_name")));
+        serviceParams.put("username", String.format("%s@pivotal.io", params.get("user_name")));
         serviceParams.put("channel", params.get("channel_name"));
         serviceParams.put("received_at", ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
         serviceParams.put("command", params.get("text"));

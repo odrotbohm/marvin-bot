@@ -116,7 +116,7 @@ public class SlackControllerTest {
             slackInputParams.put("response_url", "https://hooks.slack.com/commands/1234/5678");
 
             apiServiceParams = new HashMap<>();
-            apiServiceParams.put("user", "Steve@pivotal.io");
+            apiServiceParams.put("username", "Steve@pivotal.io");
             apiServiceParams.put("channel", "test");
             apiServiceParams.put("received_at", ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
             apiServiceParams.put("command", "time");
