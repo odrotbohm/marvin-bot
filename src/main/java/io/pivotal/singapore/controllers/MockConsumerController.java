@@ -15,21 +15,29 @@ import java.util.Map;
 public class MockConsumerController {
 
     @RequestMapping(value = "/mocker", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> index(@RequestBody Map<String, Object> params) {
+    public Map<String, String> index(@RequestBody Map<String, Object> params) {
 
         Map<String, String> arguments = (Map) params.get("arguments");
-        String time = "Its " + new Date();
+        String response_message = "Its " + new Date();
 
-        if(arguments == null) {
-            return Collections.singletonMap("message", time);
+        if(arguments != null) {
+            String location = arguments.get("location");
+
+            if(location.equals("England")) {
+                response_message = "It is Tea 'o' Clock";
+            }
+            else if(location.equals("Australia")) {
+                response_message = "It's Beer 'o' Clock";
+            }
+            else if(location.equals("Russia")) {
+                response_message = "It'z Vodka 'o' Clock";
+            }
         }
 
-        String location = arguments.get("location");
-        if(location.equals("England")) time = "It is Tea 'o' Clock";
-        else if(location.equals("Australia")) time = "It's Beer 'o' Clock";
-        else if(location.equals("Russia")) time = "It'z Vodka 'o' Clock";
+        HashMap<String,String> response = new HashMap<String, String>();
+        response.put("message", response_message);
+        response.put("message_type", "channel");
 
-
-        return Collections.singletonMap("message", time);
+        return response;
     }
 }
