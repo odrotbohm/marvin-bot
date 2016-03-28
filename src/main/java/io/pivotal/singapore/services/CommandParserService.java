@@ -10,6 +10,9 @@ public class CommandParserService {
 
     public HashMap<String,String> parse(@NotNull String textComamnd) {
         HashMap<String, String> result = new HashMap<>();
+        result.put("command", "");
+        result.put("sub_command", "");
+        result.put("arguments", "");
 
         String[] tokens = textComamnd.trim().split(" ");
         if (tokens[0].isEmpty()) return result;

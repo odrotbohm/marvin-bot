@@ -29,9 +29,9 @@ public class CommandParserServiceTest {
 
         HashMap<String, String> result = service.parse(textCommand);
 
-        assertThat(result.get("command"), is(nullValue()));
-        assertThat(result.get("sub_command"), is(nullValue()));
-        assertThat(result.get("arguments"), is(nullValue()));
+        assertThat(result.get("command"), is(""));
+        assertThat(result.get("sub_command"), is(""));
+        assertThat(result.get("arguments"), is(""));
     }
 
     @Test
@@ -41,8 +41,8 @@ public class CommandParserServiceTest {
         HashMap<String, String> result = service.parse(textCommand);
 
         assertThat(result.get("command"), is("event"));
-        assertThat(result.get("sub_command"), is(nullValue()));
-        assertThat(result.get("arguments"), is(nullValue()));
+        assertThat(result.get("sub_command"), is(""));
+        assertThat(result.get("arguments"), is(""));
     }
 
     @Test
@@ -53,6 +53,6 @@ public class CommandParserServiceTest {
 
         assertThat(result.get("command"), is("event"));
         assertThat(result.get("sub_command"), is("create"));
-        assertThat(result.get("arguments"), is(nullValue()));
+        assertThat(result.get("arguments"), is(""));
     }
 }
