@@ -188,6 +188,25 @@ public class SlackControllerTest {
             apiServiceParams.put("command", "time in London");
             verify(remoteApiService).call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams);
         }
+
+        @Test
+        public void testResponseMapping() {
+            String responseType = "channel";
+            String text = "some example";
+
+            HashMap<String, String> response = controller.textResponse(responseType, text);
+            assertThat(response.get("response_type"), is("in_channel"));
+
+            responseType = "user";
+            response = controller.textResponse(responseType, text);
+
+            assertThat(response.get("response_type"), is("ephemeral"));
+
+            responseType = "the_galaxy";
+            response = controller.textResponse(responseType, text);
+
+            assertThat(response.get("response_type"), is("ephemeral"));
+        }
     }
 
 }

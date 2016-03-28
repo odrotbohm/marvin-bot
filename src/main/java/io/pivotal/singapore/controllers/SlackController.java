@@ -63,7 +63,7 @@ public class SlackController {
             response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), _params);
         }
 
-        return textResponse(response.get("message"));
+        return textResponse(response.get("message_type"), response.get("message"));
     }
 
     private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {
@@ -84,15 +84,29 @@ public class SlackController {
         return commandRepository.findOneByName(commandName);
     }
 
-    private HashMap<String, String> textResponse(String text) {
+    HashMap<String, String> textResponse(String messageType, String text) {
+        String responseType = nounMapping().get(messageType);
+
+        if(responseType == null) {
+            responseType = "ephemeral";
+        }
+
         HashMap<String, String> response = new HashMap<>();
-        response.put("response_type", "ephemeral");
+        response.put("response_type", responseType);
         response.put("text", text);
 
         return response;
     }
 
+    private HashMap<String, String> nounMapping() {
+        HashMap<String, String> nouns = new HashMap<>();
+        nouns.put("user", "ephemeral");
+        nouns.put("channel", "in_channel");
+
+        return nouns;
+    }
+
     private HashMap<String, String> defaultResponse() {
-        return textResponse("This will all end in tears.");
+        return textResponse("user", "This will all end in tears.");
     }
 }
