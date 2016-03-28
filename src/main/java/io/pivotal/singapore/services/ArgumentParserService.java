@@ -17,9 +17,9 @@ import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
 
 @Service
-class ArgumentParserService {
+public class ArgumentParserService {
 
-    Map parse(String rawCommand, List<Map<String, String>> argumentsConfig) {
+    public Map parse(String rawCommand, List<Map<String, String>> argumentsConfig) {
         TreeMap<String, String> returnMap = new TreeMap<>();
 
         for(Map<String, String> argsMap: argumentsConfig) {

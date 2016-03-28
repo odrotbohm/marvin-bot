@@ -4,6 +4,7 @@ import io.pivotal.singapore.MarvinApplication;
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
+import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.FrozenTimeMachine;
@@ -80,6 +81,9 @@ public class SlackControllerTest {
         @Spy
         private FrozenTimeMachine clock;
 
+        @Mock
+        private ArgumentParserService argumentParserService;
+
         @Spy
         private CommandParserService commandParserService;
 
@@ -92,7 +96,7 @@ public class SlackControllerTest {
         private Optional<Command> optionalCommand;
 
         private Map<String, String> response;
-        private Map<String, String> apiServiceParams;
+        private Map<String, Object> apiServiceParams;
 
         @Before
         public void setUp() {
@@ -163,17 +167,25 @@ public class SlackControllerTest {
         @Test
         public void findsSubCommandsWhenItHasThem() {
             slackInputParams.put("text", "time in London");
-            apiServiceParams.put("command", "time in London");
 
             SubCommand subCommand = new SubCommand();
             subCommand.setName("in");
-
-            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+            subCommand.setArguments(new ArrayList<>());
 
             List<SubCommand> subCommands = new ArrayList<>();
             subCommands.add(subCommand);
             command.setSubCommands(subCommands);
+
+            Map<String, String> parsedArguments = new TreeMap<>();
+            parsedArguments.put("location", "London");
+
+            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+
             Map<String, String> response = controller.index(slackInputParams);
+
+            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.put("command", "time in London");
             verify(remoteApiService).call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams);
         }
     }

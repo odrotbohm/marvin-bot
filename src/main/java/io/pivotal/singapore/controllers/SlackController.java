@@ -3,6 +3,7 @@ package io.pivotal.singapore.controllers;
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
+import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class SlackController {
     @Autowired
     CommandParserService commandParserService;
 
+    @Autowired
+    ArgumentParserService argumentParserService;
+
     private Clock clock = Clock.systemUTC();
 
     @GetJson("/")
@@ -47,12 +51,16 @@ public class SlackController {
 
         HashMap<String, String> response;
         Optional<SubCommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
+        Map _params = remoteServiceParams(params);
         if (!subCommandOptional.isPresent()) {
             Command command = commandOptional.get();
-            response = remoteApiService.call(command.getMethod(), command.getEndpoint(), remoteServiceParams(params));
+            response = remoteApiService.call(command.getMethod(), command.getEndpoint(), _params);
         } else {
             SubCommand subCommand = subCommandOptional.get();
-            response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), remoteServiceParams(params));
+            Map args = argumentParserService.parse(parsedCommand.get("arguments"), subCommand.getArguments());
+            _params.put("arguments", args);
+
+            response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), _params);
         }
 
         return textResponse(response.get("message"));
@@ -62,8 +70,8 @@ public class SlackController {
         return commandOptional.flatMap((c)-> c.findSubCommand(subCommandText));
     }
 
-    private HashMap<String, String> remoteServiceParams(HashMap<String, String> params) {
-        HashMap<String, String> serviceParams = new HashMap<>();
+    private HashMap<String, Object> remoteServiceParams(HashMap<String, String> params) {
+        HashMap<String, Object> serviceParams = new HashMap<>();
         serviceParams.put("user", String.format("%s@pivotal.io", params.get("user_name")));
         serviceParams.put("channel", params.get("channel_name"));
         serviceParams.put("received_at", ZonedDateTime.now(clock).format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
