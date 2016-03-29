@@ -1,6 +1,7 @@
 package io.pivotal.singapore.services;
 
 import io.pivotal.singapore.models.Command;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +29,16 @@ public class RemoteApiServiceTest {
     private Command command;
     private HashMap<String, String> params;
 
+    private HashMap<String, String> callRemoteApiService() {
+        return remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+    }
+
+    private void setupMockServer(String endpoint, HttpMethod method) {
+        mockServer.expect(requestTo(endpoint))
+                .andExpect(method(method))
+                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+    }
+
     @Before
     public void setUp() throws Exception {
         restTemplate = new RestTemplate();
@@ -39,57 +50,48 @@ public class RemoteApiServiceTest {
         params.put("rawCommand", "time location Singapore");
     }
 
+    @After
+    public void tearDown() throws Exception {
+        mockServer.verify();
+    }
+
     @Test
     public void callsEndpointWithPost() throws Exception {
-        mockServer.expect(requestTo("http://example.com/"))
-                .andExpect(method(HttpMethod.POST))
-                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+        command.setMethod(RequestMethod.POST);
+        setupMockServer("http://example.com/", HttpMethod.POST);
 
-        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        HashMap<String, String> result = callRemoteApiService();
 
         assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
-        mockServer.verify();
     }
 
     @Test
     public void callsEndpointWithGet() throws Exception {
         command.setMethod(RequestMethod.GET);
+        setupMockServer("http://example.com/?rawCommand=time%20location%20Singapore", HttpMethod.GET);
 
-        mockServer.expect(requestTo("http://example.com/?rawCommand=time%20location%20Singapore"))
-            .andExpect(method(HttpMethod.GET))
-            .andRespond(withSuccess("{ \"time\": \"It is Tiger time\" }", MediaType.APPLICATION_JSON));
+        HashMap<String, String> result = callRemoteApiService();
 
-        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
-
-        assertThat(result.get("time"), is(equalTo("It is Tiger time")));
-        mockServer.verify();
+        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
     }
 
     @Test
     public void callsEndpointWithPut() throws Exception {
         command.setMethod(RequestMethod.PUT);
+        setupMockServer("http://example.com/", HttpMethod.PUT);
 
-        mockServer.expect(requestTo("http://example.com/"))
-                .andExpect(method(HttpMethod.PUT))
-                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
-
-        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        HashMap<String, String> result = callRemoteApiService();
 
         assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
-        mockServer.verify();
     }
 
     @Test
     public void callsEndpointWithDelete() throws Exception {
         command.setMethod(RequestMethod.DELETE);
+        setupMockServer("http://example.com/", HttpMethod.DELETE);
 
-        mockServer.expect(requestTo("http://example.com/"))
-                .andExpect(method(HttpMethod.DELETE))
-                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
-
-        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        HashMap<String, String> result = callRemoteApiService();
 
         assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
-        mockServer.verify();
     }
 }
