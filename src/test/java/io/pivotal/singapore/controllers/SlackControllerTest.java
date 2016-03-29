@@ -250,6 +250,71 @@ public class SlackControllerTest {
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(subCommand.getDefaultResponseFail())));
         }
+
+        @Test
+        public void testDefaultSuccessResponse() {
+            slackInputParams.put("text", "time in London");
+
+            SubCommand subCommand = new SubCommand();
+            subCommand.setName("in");
+            subCommand.setMethod(RequestMethod.POST);
+            subCommand.setEndpoint("http://example.com/hello");
+            subCommand.setDefaultResponseFail("Shucks... something went wrong.");
+            subCommand.setDefaultResponseSuccess("w00t!");
+            subCommand.setArguments(new ArrayList<>());
+
+            List<SubCommand> subCommands = new ArrayList<>();
+            subCommands.add(subCommand);
+            command.setSubCommands(subCommands);
+
+            Map<String, String> parsedArguments = new TreeMap<>();
+            parsedArguments.put("location", "London");
+
+            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+
+            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.put("command", "time in London");
+            Map<String, String> returnParams = new TreeMap<>();
+            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
+                new RemoteApiServiceResponse(true, returnParams)
+            );
+
+            Map<String, String> response = controller.index(slackInputParams);
+            assertThat(response.get("text"), is(equalTo(subCommand.getDefaultResponseSuccess())));
+        }
+
+
+        @Test
+        public void testNoDefaultSuccessResponse() {
+            slackInputParams.put("text", "time in London");
+
+            SubCommand subCommand = new SubCommand();
+            subCommand.setName("in");
+            subCommand.setMethod(RequestMethod.POST);
+            subCommand.setEndpoint("http://example.com/hello");
+            subCommand.setArguments(new ArrayList<>());
+
+            List<SubCommand> subCommands = new ArrayList<>();
+            subCommands.add(subCommand);
+            command.setSubCommands(subCommands);
+
+            Map<String, String> parsedArguments = new TreeMap<>();
+            parsedArguments.put("location", "London");
+
+            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+
+            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.put("command", "time in London");
+            Map<String, String> returnParams = new TreeMap<>();
+            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
+                new RemoteApiServiceResponse(true, returnParams)
+            );
+
+            Map<String, String> response = controller.index(slackInputParams);
+            assertThat(response.get("text"), is(equalTo("{}")));
+        }
     }
 
 }

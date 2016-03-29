@@ -76,11 +76,15 @@ public class SlackController {
     private String getMessage(RemoteApiServiceResponse response, ICommand command) {
         String message = response.getBody().get("message");
 
-        if (message != null) {
-            return message;
-        } else {
-            return response.isSuccessful() ? command.getDefaultResponseSuccess() : command.getDefaultResponseFail();
+        if (message == null) {
+            message = response.isSuccessful() ? command.getDefaultResponseSuccess() : command.getDefaultResponseFail();
+
+            if (message == null) { // No default message provided by service, so return whatever they sent
+                message = response.getBody().toString();
+            }
         }
+
+        return message;
     }
 
     private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {
