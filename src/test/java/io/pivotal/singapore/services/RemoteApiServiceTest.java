@@ -10,6 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.response.DefaultResponseCreator;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -49,6 +50,7 @@ public class RemoteApiServiceTest {
         mockServer = MockRestServiceServer.createServer(restTemplate);
 
         command = new Command("some command", "http://example.com/");
+
         params = new HashMap<>();
         params.put("rawCommand", "time location Singapore");
     }
@@ -100,13 +102,9 @@ public class RemoteApiServiceTest {
 
     @Test
     public void callsEndpointWithTheCorrespondingMethod() throws Exception {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("rawCommand", "time location Singapore");
-
-        mockServer.expect(requestTo("http://example.com/"))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
-        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        RemoteApiServiceResponse result = getRemoteApiServiceResponse(
+            withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON)
+        );
 
         assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
         mockServer.verify();
@@ -114,13 +112,10 @@ public class RemoteApiServiceTest {
 
     @Test
     public void httpBadRequestErrorsReturnedFromEndpoint() {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("rawCommand", "time location Zimbabwe");
-
-        mockServer.expect(requestTo("http://example.com/"))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withBadRequest().body("{ \"status\" : \"FAILED!!!!!\" }").contentType(MediaType.APPLICATION_JSON));
-        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        RemoteApiServiceResponse result = getRemoteApiServiceResponse(withBadRequest()
+            .body("{ \"status\" : \"FAILED!!!!!\" }")
+            .contentType(MediaType.APPLICATION_JSON)
+        );
 
         assertThat(result.getBody().get("status"), is(equalTo("FAILED!!!!!")));
         assertThat(result.isSuccessful(), is(false));
@@ -129,13 +124,10 @@ public class RemoteApiServiceTest {
 
     @Test
     public void httpMalformedJSONErrorsReturnedFromEndpoint() {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("rawCommand", "time location Zimbabwe");
-
-        mockServer.expect(requestTo("http://example.com/"))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withBadRequest().body("\"status\" : \"FAILED!!!!!\" }").contentType(MediaType.APPLICATION_JSON));
-        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        RemoteApiServiceResponse result = getRemoteApiServiceResponse(withBadRequest()
+            .body("\"status\" : \"FAILED!!!!!\" }")
+            .contentType(MediaType.APPLICATION_JSON)
+        );
 
         assertThat(result.getBody().get("errorBody"), is(equalTo("\"status\" : \"FAILED!!!!!\" }")));
         assertThat(result.isSuccessful(), is(false));
@@ -144,16 +136,19 @@ public class RemoteApiServiceTest {
 
     @Test
     public void httpErrorsReturnedFromEndpointNonJSON() {
-        HashMap<String, String> params = new HashMap<>();
-        params.put("rawCommand", "time location Zimbabwe");
-
-        mockServer.expect(requestTo("http://example.com/"))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withBadRequest().body("FAILED!!!!!"));
-        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+        RemoteApiServiceResponse result = getRemoteApiServiceResponse(withBadRequest().body("FAILED!!!!!"));
 
         assertThat(result.getBody().get("errorBody"), is(equalTo("FAILED!!!!!")));
         assertThat(result.isSuccessful(), is(false));
         mockServer.verify();
     }
+
+    private RemoteApiServiceResponse getRemoteApiServiceResponse(DefaultResponseCreator returnResponse) {
+        mockServer.expect(requestTo("http://example.com/"))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(returnResponse);
+
+        return remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+    }
+
 }
