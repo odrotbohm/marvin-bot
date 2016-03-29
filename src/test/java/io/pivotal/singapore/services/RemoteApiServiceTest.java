@@ -64,4 +64,32 @@ public class RemoteApiServiceTest {
         assertThat(result.get("time"), is(equalTo("It is Tiger time")));
         mockServer.verify();
     }
+
+    @Test
+    public void callsEndpointWithPut() throws Exception {
+        command.setMethod(RequestMethod.PUT);
+
+        mockServer.expect(requestTo("http://example.com/"))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+
+        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        mockServer.verify();
+    }
+
+    @Test
+    public void callsEndpointWithDelete() throws Exception {
+        command.setMethod(RequestMethod.DELETE);
+
+        mockServer.expect(requestTo("http://example.com/"))
+                .andExpect(method(HttpMethod.DELETE))
+                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+
+        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        mockServer.verify();
+    }
 }
