@@ -80,7 +80,9 @@ public class SlackController {
             message = getMessage(response, subCommand);
         }
 
+        message = constructInterpolatedMessage(response.getBody(), message);
         String messageType = response.getBody().get("message_type");
+
         return textResponse(messageType, message);
     }
 
@@ -93,6 +95,15 @@ public class SlackController {
             if (message == null) { // No default message provided by service, so return whatever they sent
                 message = response.getBody().toString();
             }
+        }
+
+        return message;
+    }
+
+    private String constructInterpolatedMessage(Map<String, String> payload, String message) {
+        for (Map.Entry<String, String> entry : payload.entrySet()) {
+            String pattern = String.format("{%s}", entry.getKey());
+            message = message.replace(pattern, entry.getValue());
         }
 
         return message;

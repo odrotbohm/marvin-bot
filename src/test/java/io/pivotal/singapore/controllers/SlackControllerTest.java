@@ -339,6 +339,21 @@ public class SlackControllerTest {
 
             controller.index(slackInputParams);
         }
+
+        @Test
+        public void testStringInterpolationForDefaultSuccessMessage() throws Exception{
+            command.setDefaultResponseSuccess("It is time for {meal}, {name}! Have a good time, {name}!");
+            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+
+            HashMap<String, String> remoteServiceResponse = new HashMap<>();
+            remoteServiceResponse.put("name", "Wilson");
+            remoteServiceResponse.put("meal", "breakfast");
+            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(true, remoteServiceResponse));
+
+            Map<String, String> response = controller.index(slackInputParams);
+            assertThat(response.get("text"), is(equalTo("It is time for breakfast, Wilson! Have a good time, Wilson!")));
+        }
     }
 
 }
