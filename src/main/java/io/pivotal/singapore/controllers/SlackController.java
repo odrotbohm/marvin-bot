@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-public class SlackController {
+class SlackController {
     @Autowired
     CommandRepository commandRepository;
 
@@ -43,12 +43,11 @@ public class SlackController {
     private Clock clock = Clock.systemUTC();
 
     @GetJson("/")
-    public Map<String, String> index(@RequestParam HashMap<String, String> params) throws Exception {
+    Map<String, String> index(@RequestParam HashMap<String, String> params) throws Exception {
         String token = params.get("token");
         if (token == null || !token.equals(SLACK_TOKEN)) {
             throw new UnrecognizedApiToken();
         }
-
 
         String commandText = params.get("text");
         if (commandText == null || commandText.isEmpty()) {
