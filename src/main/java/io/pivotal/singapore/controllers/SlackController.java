@@ -6,6 +6,7 @@ import io.pivotal.singapore.repositories.CommandRepository;
 import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
+import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.composed.web.rest.json.GetJson;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,7 +50,7 @@ public class SlackController {
             return defaultResponse();
         }
 
-        HashMap<String, String> response;
+        RemoteApiServiceResponse response;
         Optional<SubCommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
         Map _params = remoteServiceParams(params);
         if (!subCommandOptional.isPresent()) {
@@ -63,7 +64,7 @@ public class SlackController {
             response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), _params);
         }
 
-        return textResponse(response.get("message_type"), response.get("message"));
+        return textResponse(response.getBody().get("message_type"), response.getBody().get("message"));
     }
 
     private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {

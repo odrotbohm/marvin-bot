@@ -1,6 +1,7 @@
 package io.pivotal.singapore.services;
 
 import io.pivotal.singapore.models.Command;
+import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +20,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+
 
 @RunWith(MockitoJUnitRunner.class)
 public class RemoteApiServiceTest {
@@ -29,7 +32,7 @@ public class RemoteApiServiceTest {
     private Command command;
     private HashMap<String, String> params;
 
-    private HashMap<String, String> callRemoteApiService() {
+    private RemoteApiServiceResponse callRemoteApiService() {
         return remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
     }
 
@@ -60,9 +63,9 @@ public class RemoteApiServiceTest {
         command.setMethod(RequestMethod.POST);
         setupMockServer("http://example.com/", HttpMethod.POST);
 
-        HashMap<String, String> result = callRemoteApiService();
+        RemoteApiServiceResponse result = callRemoteApiService();
 
-        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
     }
 
     @Test
@@ -70,9 +73,9 @@ public class RemoteApiServiceTest {
         command.setMethod(RequestMethod.GET);
         setupMockServer("http://example.com/?rawCommand=time%20location%20Singapore", HttpMethod.GET);
 
-        HashMap<String, String> result = callRemoteApiService();
+        RemoteApiServiceResponse result = callRemoteApiService();
 
-        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
     }
 
     @Test
@@ -80,9 +83,9 @@ public class RemoteApiServiceTest {
         command.setMethod(RequestMethod.PUT);
         setupMockServer("http://example.com/", HttpMethod.PUT);
 
-        HashMap<String, String> result = callRemoteApiService();
+        RemoteApiServiceResponse result = callRemoteApiService();
 
-        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
     }
 
     @Test
@@ -90,8 +93,67 @@ public class RemoteApiServiceTest {
         command.setMethod(RequestMethod.DELETE);
         setupMockServer("http://example.com/", HttpMethod.DELETE);
 
-        HashMap<String, String> result = callRemoteApiService();
+        RemoteApiServiceResponse result = callRemoteApiService();
 
-        assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
+    }
+
+    @Test
+    public void callsEndpointWithTheCorrespondingMethod() throws Exception {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("rawCommand", "time location Singapore");
+
+        mockServer.expect(requestTo("http://example.com/"))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        mockServer.verify();
+    }
+
+    @Test
+    public void httpBadRequestErrorsReturnedFromEndpoint() {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("rawCommand", "time location Zimbabwe");
+
+        mockServer.expect(requestTo("http://example.com/"))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withBadRequest().body("{ \"status\" : \"FAILED!!!!!\" }").contentType(MediaType.APPLICATION_JSON));
+        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.getBody().get("status"), is(equalTo("FAILED!!!!!")));
+        assertThat(result.isSuccessful(), is(false));
+        mockServer.verify();
+    }
+
+    @Test
+    public void httpMalformedJSONErrorsReturnedFromEndpoint() {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("rawCommand", "time location Zimbabwe");
+
+        mockServer.expect(requestTo("http://example.com/"))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withBadRequest().body("\"status\" : \"FAILED!!!!!\" }").contentType(MediaType.APPLICATION_JSON));
+        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.getBody().get("errorBody"), is(equalTo("\"status\" : \"FAILED!!!!!\" }")));
+        assertThat(result.isSuccessful(), is(false));
+        mockServer.verify();
+    }
+
+    @Test
+    public void httpErrorsReturnedFromEndpointNonJSON() {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("rawCommand", "time location Zimbabwe");
+
+        mockServer.expect(requestTo("http://example.com/"))
+            .andExpect(method(HttpMethod.POST))
+            .andRespond(withBadRequest().body("FAILED!!!!!"));
+        RemoteApiServiceResponse result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.getBody().get("errorBody"), is(equalTo("FAILED!!!!!")));
+        assertThat(result.isSuccessful(), is(false));
+        mockServer.verify();
     }
 }

@@ -8,6 +8,7 @@ import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.FrozenTimeMachine;
+import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -23,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.ZonedDateTime;
@@ -140,7 +142,7 @@ public class SlackControllerTest {
             HashMap<String, String> serviceResponse = new HashMap<>();
             String australiaTime = "The time in Australia is Beer o'clock.";
             serviceResponse.put("message", australiaTime);
-            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(serviceResponse);
+            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(new RemoteApiServiceResponse(true, serviceResponse));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(australiaTime)));
@@ -158,7 +160,7 @@ public class SlackControllerTest {
             HashMap<String, String> serviceResponse = new HashMap<>();
             String englandTime = "The time in England is Tea o'clock.";
             serviceResponse.put("message", englandTime);
-            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(serviceResponse);
+            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(new RemoteApiServiceResponse(true, serviceResponse));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(englandTime)));
@@ -170,6 +172,8 @@ public class SlackControllerTest {
 
             SubCommand subCommand = new SubCommand();
             subCommand.setName("in");
+            subCommand.setMethod(RequestMethod.POST);
+            subCommand.setEndpoint("http://example.com/hello");
             subCommand.setArguments(new ArrayList<>());
 
             List<SubCommand> subCommands = new ArrayList<>();
@@ -182,11 +186,17 @@ public class SlackControllerTest {
             when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
-            Map<String, String> response = controller.index(slackInputParams);
-
             apiServiceParams.put("arguments", parsedArguments);
             apiServiceParams.put("command", "time in London");
-            verify(remoteApiService).call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams);
+            Map<String, String> returnParams = new TreeMap<>();
+            String englandTime = "The time in England is Tea o'clock.";
+            returnParams.put("message", englandTime);
+            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
+                new RemoteApiServiceResponse(true, returnParams)
+            );
+
+            Map<String, String> response = controller.index(slackInputParams);
+            assertThat(response.get("text"), is(equalTo(englandTime)));
         }
 
         @Test
