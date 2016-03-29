@@ -8,5 +8,5 @@ public interface ICommand {
     RequestMethod getMethod();
 
     String getDefaultResponseSuccess();
-    String getDefaultResponseFail();
+    String getDefaultResponseFailure();
 }

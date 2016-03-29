@@ -226,7 +226,7 @@ public class SlackControllerTest {
             subCommand.setName("in");
             subCommand.setMethod(RequestMethod.POST);
             subCommand.setEndpoint("http://example.com/hello");
-            subCommand.setDefaultResponseFail("Shucks... something went wrong.");
+            subCommand.setDefaultResponseFailure("Shucks... something went wrong.");
             subCommand.setDefaultResponseSuccess("w00t!");
             subCommand.setArguments(new ArrayList<>());
 
@@ -248,7 +248,7 @@ public class SlackControllerTest {
             );
 
             Map<String, String> response = controller.index(slackInputParams);
-            assertThat(response.get("text"), is(equalTo(subCommand.getDefaultResponseFail())));
+            assertThat(response.get("text"), is(equalTo(subCommand.getDefaultResponseFailure())));
         }
 
         @Test
@@ -259,7 +259,7 @@ public class SlackControllerTest {
             subCommand.setName("in");
             subCommand.setMethod(RequestMethod.POST);
             subCommand.setEndpoint("http://example.com/hello");
-            subCommand.setDefaultResponseFail("Shucks... something went wrong.");
+            subCommand.setDefaultResponseFailure("Shucks... something went wrong.");
             subCommand.setDefaultResponseSuccess("w00t!");
             subCommand.setArguments(new ArrayList<>());
 

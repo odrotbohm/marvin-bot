@@ -77,7 +77,7 @@ public class SlackController {
         String message = response.getBody().get("message");
 
         if (message == null) {
-            message = response.isSuccessful() ? command.getDefaultResponseSuccess() : command.getDefaultResponseFail();
+            message = response.isSuccessful() ? command.getDefaultResponseSuccess() : command.getDefaultResponseFailure();
 
             if (message == null) { // No default message provided by service, so return whatever they sent
                 message = response.getBody().toString();

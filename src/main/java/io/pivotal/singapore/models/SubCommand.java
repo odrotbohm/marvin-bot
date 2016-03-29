@@ -21,7 +21,7 @@ public class SubCommand implements ICommand {
     private String name;
     private String endpoint;
     @Getter @Setter private String defaultResponseSuccess;
-    @Getter @Setter private String defaultResponseFail;
+    @Getter @Setter private String defaultResponseFailure;
 
     private RequestMethod method;
 

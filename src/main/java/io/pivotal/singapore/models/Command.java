@@ -22,7 +22,7 @@ public class Command implements ICommand {
     @Getter @Setter private String name;
     @Getter @Setter private String endpoint;
     @Getter @Setter private String defaultResponseSuccess;
-    @Getter @Setter private String defaultResponseFail;
+    @Getter @Setter private String defaultResponseFailure;
 
     @Getter @Setter private RequestMethod method;
 
