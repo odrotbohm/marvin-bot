@@ -76,6 +76,8 @@ public class CommandResourceTest {
         String json = new JSONObject()
                 .put("name", "command")
                 .put("endpoint", "http://localhost/9")
+                .put("defaultResponseSuccess", "I'm a success")
+                .put("defaultResponseFail", "I'm a failure")
                 .put("method", "GET")
                 .toString();
 
@@ -92,6 +94,8 @@ public class CommandResourceTest {
         then().
                 body("_embedded.commands.size()", is(1)).
                 body("_embedded.commands[0].name", is("command")).
+                body("_embedded.commands[0].defaultResponseSuccess", is("I'm a success")).
+                body("_embedded.commands[0].defaultResponseFail", is("I'm a failure")).
                 body("_embedded.commands[0].endpoint", is("http://localhost/9"));
     }
 
@@ -100,6 +104,8 @@ public class CommandResourceTest {
         JSONObject originalJson = new JSONObject()
                 .put("name", "foobar")
                 .put("endpoint", "http://localhost/9")
+                .put("defaultResponseSuccess", "I'm a success")
+                .put("defaultResponseFail", "I'm a failure")
                 .put("method", "GET");
 
         given().
@@ -110,7 +116,9 @@ public class CommandResourceTest {
         then().
                 statusCode(SC_CREATED);
 
-        JSONObject newJson = originalJson.put("method", "POST");
+        JSONObject newJson = originalJson.put("method", "POST")
+                            .put("defaultResponseSuccess", "Its successful")
+                            .put("defaultResponseFail", "Its failed");
 
         given().
                 contentType(ContentType.JSON).
@@ -126,6 +134,8 @@ public class CommandResourceTest {
                 content("page.totalElements", equalTo(1)).
                 body("_embedded.commands[0].name", is("foobar")).
                 body("_embedded.commands[0].endpoint", is("http://localhost/9")).
+                body("_embedded.commands[0].defaultResponseSuccess", is("Its successful")).
+                body("_embedded.commands[0].defaultResponseFail", is("Its failed")).
                 body("_embedded.commands[0].method", is("POST"));
     }
 
@@ -150,6 +160,8 @@ public class CommandResourceTest {
                 .put("name", "bar")
                 .put("endpoint", "/bar")
                 .put("method", "POST")
+                .put("defaultResponseSuccess", "I'm a success")
+                .put("defaultResponseFail", "I'm a failure")
                 .put("arguments", argsArray);
 
         subCommands.put(subCommandObject);
@@ -174,6 +186,8 @@ public class CommandResourceTest {
                 body("subCommands[0].name", is("bar")).
                 body("subCommands[0].method", is("POST")).
                 body("subCommands[0].endpoint", is("/bar")).
+                body("subCommands[0].defaultResponseSuccess", is("I'm a success")).
+                body("subCommands[0].defaultResponseFail", is("I'm a failure")).
                 body("subCommands[0].arguments[0].zzz", is("form1")).
                 body("subCommands[0].arguments[1].lll", is("form2")).
                 body("subCommands[0].arguments[2].aaa", is("form3"));
