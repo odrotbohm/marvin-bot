@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Entity
 @Table(name = "commands")
-public class Command {
+public class Command implements ICommand {
 
     @Id
     @SequenceGenerator(name = "pk_sequence", sequenceName = "commands_id_seq")
@@ -21,6 +21,8 @@ public class Command {
     @Column(unique = true)
     @Getter @Setter private String name;
     @Getter @Setter private String endpoint;
+    @Getter @Setter private String defaultResponseSuccess;
+    @Getter @Setter private String defaultResponseFail;
 
     @Getter @Setter private RequestMethod method;
 

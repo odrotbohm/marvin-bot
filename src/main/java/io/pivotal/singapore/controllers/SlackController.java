@@ -1,6 +1,7 @@
 package io.pivotal.singapore.controllers;
 
 import io.pivotal.singapore.models.Command;
+import io.pivotal.singapore.models.ICommand;
 import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
 import io.pivotal.singapore.services.ArgumentParserService;
@@ -53,18 +54,33 @@ public class SlackController {
         RemoteApiServiceResponse response;
         Optional<SubCommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
         Map _params = remoteServiceParams(params);
+        String message;
         if (!subCommandOptional.isPresent()) {
             Command command = commandOptional.get();
+
             response = remoteApiService.call(command.getMethod(), command.getEndpoint(), _params);
+            message = getMessage(response, command);
         } else {
             SubCommand subCommand = subCommandOptional.get();
             Map args = argumentParserService.parse(parsedCommand.get("arguments"), subCommand.getArguments());
             _params.put("arguments", args);
 
             response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), _params);
+            message = getMessage(response, subCommand);
         }
 
-        return textResponse(response.getBody().get("message_type"), response.getBody().get("message"));
+        String messageType = response.getBody().get("message_type");
+        return textResponse(messageType, message);
+    }
+
+    private String getMessage(RemoteApiServiceResponse response, ICommand command) {
+        String message = response.getBody().get("message");
+
+        if (message != null) {
+            return message;
+        } else {
+            return response.isSuccessful() ? command.getDefaultResponseSuccess() : command.getDefaultResponseFail();
+        }
     }
 
     private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {
