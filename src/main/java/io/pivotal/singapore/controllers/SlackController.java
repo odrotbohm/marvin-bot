@@ -9,8 +9,11 @@ import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.composed.web.rest.json.GetJson;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Clock;
@@ -34,12 +37,20 @@ public class SlackController {
     @Autowired
     ArgumentParserService argumentParserService;
 
+    @Value("${api.slack.token}")
+    private String SLACK_TOKEN;
+
     private Clock clock = Clock.systemUTC();
 
     @GetJson("/")
-    public Map<String, String> index(@RequestParam HashMap<String, String> params) {
-        String commandText = params.get("text");
+    public Map<String, String> index(@RequestParam HashMap<String, String> params) throws Exception {
+        String token = params.get("token");
+        if (token == null || !token.equals(SLACK_TOKEN)) {
+            throw new UnrecognizedApiToken();
+        }
 
+
+        String commandText = params.get("text");
         if (commandText == null || commandText.isEmpty()) {
             return defaultResponse();
         }
@@ -130,4 +141,8 @@ public class SlackController {
     private HashMap<String, String> defaultResponse() {
         return textResponse("user", "This will all end in tears.");
     }
+}
+
+@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Unrecognized token")
+class UnrecognizedApiToken extends Exception {
 }

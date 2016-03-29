@@ -18,11 +18,13 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.context.WebApplicationContext;
@@ -43,16 +45,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 @RunWith(Enclosed.class)
+@ActiveProfiles(profiles = "test")
 public class SlackControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringApplicationConfiguration(classes = MarvinApplication.class)
     @WebAppConfiguration
-    @ActiveProfiles(profiles = "test")
     public static class Integration {
+        @Value("${api.slack.token}")
+        String SLACK_TOKEN;
         @Autowired
         private WebApplicationContext wac;
-
         private MockMvc mockMvc;
 
         @Before
@@ -63,6 +66,7 @@ public class SlackControllerTest {
         @Test
         public void testHelloWorld() throws Exception {
             mockMvc.perform(get("/")
+                    .param("token", SLACK_TOKEN)
                 .param("text", "")
                 .param("team_id", "pivotal.io")
                 .param("user_name", "bandersson")
@@ -100,13 +104,17 @@ public class SlackControllerTest {
         private Map<String, String> response;
         private Map<String, Object> apiServiceParams;
 
+        private String MOCK_SLACK_TOKEN = "TEST TOKEN";
+
         @Before
         public void setUp() {
+            ReflectionTestUtils.setField(controller, "SLACK_TOKEN", MOCK_SLACK_TOKEN, String.class);
+
             command = new Command("time", "http://somesuch.tld/api/time/");
             optionalCommand = Optional.of(command);
 
             slackInputParams = new HashMap<>();
-            slackInputParams.put("token", "gIkuvaNzQIHg97ATvDxqgjtO");
+            slackInputParams.put("token", MOCK_SLACK_TOKEN);
             slackInputParams.put("team_id", "T0001");
             slackInputParams.put("team_domain", "example");
             slackInputParams.put("channel_id", "C2147483705");
@@ -129,14 +137,14 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void testReceiveTimeOfDay() {
+        public void testReceiveTimeOfDay() throws Exception {
             when(commandRepository.findOneByName("time")).thenReturn(Optional.empty());
 
             assertThat(controller.index(slackInputParams), is(equalTo(response)));
         }
 
         @Test
-        public void findsCommandAndCallsEndpoint() {
+        public void findsCommandAndCallsEndpoint() throws Exception {
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
             HashMap<String, String> serviceResponse = new HashMap<>();
@@ -151,7 +159,7 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void findsCommandWhenItHasArguments() {
+        public void findsCommandWhenItHasArguments() throws Exception {
             slackInputParams.put("text", "time england");
             apiServiceParams.put("command", "time england");
 
@@ -167,7 +175,7 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void findsSubCommandsWhenItHasThem() {
+        public void findsSubCommandsWhenItHasThem() throws Exception {
             slackInputParams.put("text", "time in London");
 
             SubCommand subCommand = new SubCommand();
@@ -200,7 +208,7 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void testResponseMapping() {
+        public void testResponseMapping() throws Exception {
             String responseType = "channel";
             String text = "some example";
 
@@ -219,7 +227,7 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void testDefaultErrorResponse() {
+        public void testDefaultErrorResponse() throws Exception {
             slackInputParams.put("text", "time in London");
 
             SubCommand subCommand = new SubCommand();
@@ -252,7 +260,7 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void testDefaultSuccessResponse() {
+        public void testDefaultSuccessResponse() throws Exception {
             slackInputParams.put("text", "time in London");
 
             SubCommand subCommand = new SubCommand();
@@ -286,7 +294,7 @@ public class SlackControllerTest {
 
 
         @Test
-        public void testNoDefaultSuccessResponse() {
+        public void testNoDefaultSuccessResponse() throws Exception {
             slackInputParams.put("text", "time in London");
 
             SubCommand subCommand = new SubCommand();
@@ -309,11 +317,27 @@ public class SlackControllerTest {
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
             when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
-                new RemoteApiServiceResponse(true, returnParams)
+                    new RemoteApiServiceResponse(true, returnParams)
             );
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo("{}")));
+        }
+
+        @Test(expected = UnrecognizedApiToken.class)
+        public void ignoresRequestWhenSlackTokenIsMissing() throws Exception {
+            slackInputParams.put("token", null);
+            when(commandRepository.findOneByName("time")).thenReturn(Optional.empty());
+
+            controller.index(slackInputParams);
+        }
+
+        @Test(expected = UnrecognizedApiToken.class)
+        public void ignoresRequestWhenSlackTokenIsIncorrect() throws Exception {
+            slackInputParams.put("token", "WRONG TOKEN");
+            when(commandRepository.findOneByName("time")).thenReturn(Optional.empty());
+
+            controller.index(slackInputParams);
         }
     }
 
