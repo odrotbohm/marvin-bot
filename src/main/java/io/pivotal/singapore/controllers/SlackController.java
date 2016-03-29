@@ -84,7 +84,7 @@ public class SlackController {
     }
 
     private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {
-        return commandOptional.flatMap((c)-> c.findSubCommand(subCommandText));
+        return commandOptional.flatMap((c) -> c.findSubCommand(subCommandText));
     }
 
     private HashMap<String, Object> remoteServiceParams(HashMap<String, String> params) {
@@ -104,7 +104,7 @@ public class SlackController {
     HashMap<String, String> textResponse(String messageType, String text) {
         String responseType = nounMapping().get(messageType);
 
-        if(responseType == null) {
+        if (responseType == null) {
             responseType = "ephemeral";
         }
 
