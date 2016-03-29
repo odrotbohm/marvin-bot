@@ -8,6 +8,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -24,26 +25,43 @@ public class RemoteApiServiceTest {
     private RemoteApiService remoteApiService;
     private RestTemplate restTemplate;
     private MockRestServiceServer mockServer;
+    private Command command;
+    private HashMap<String, String> params;
 
     @Before
     public void setUp() throws Exception {
         restTemplate = new RestTemplate();
         remoteApiService = new RemoteApiService(restTemplate);
         mockServer = MockRestServiceServer.createServer(restTemplate);
+
+        command = new Command("some command", "http://example.com/");
+        params = new HashMap<>();
+        params.put("rawCommand", "time location Singapore");
     }
 
     @Test
-    public void callsEndpointWithTheCorrespondingMethod() throws Exception {
-        Command command = new Command("some command", "http://example.com/");
-        HashMap<String, String> params = new HashMap<>();
-        params.put("rawCommand", "time location Singapore");
-
+    public void callsEndpointWithPost() throws Exception {
         mockServer.expect(requestTo("http://example.com/"))
-            .andExpect(method(HttpMethod.POST))
-            .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON));
+
         HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
 
         assertThat(result.get("status"), is(equalTo("SUCCESS!!!!!!!")));
+        mockServer.verify();
+    }
+
+    @Test
+    public void callsEndpointWithGet() throws Exception {
+        command.setMethod(RequestMethod.GET);
+
+        mockServer.expect(requestTo("http://example.com/?rawCommand=time%20location%20Singapore"))
+            .andExpect(method(HttpMethod.GET))
+            .andRespond(withSuccess("{ \"time\": \"It is Tiger time\" }", MediaType.APPLICATION_JSON));
+
+        HashMap <String, String> result = remoteApiService.call(command.getMethod(), command.getEndpoint(), params);
+
+        assertThat(result.get("time"), is(equalTo("It is Tiger time")));
         mockServer.verify();
     }
 }

@@ -1,10 +1,9 @@
 package io.pivotal.singapore.services;
 
-import io.pivotal.singapore.models.Command;
-import io.pivotal.singapore.models.SubCommand;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,10 +24,22 @@ public class RemoteApiService {
         switch (method) {
             case POST:
                 return restTemplate.postForObject(endpoint, params, HashMap.class);
+            case GET:
+                return restTemplate.getForObject(buildUri(endpoint, params), HashMap.class);
             default:
                 throw new IllegalArgumentException(
                     String.format("HTTP method '%s' not supported.", method)
                 );
         }
+    }
+
+    private String buildUri(String endpoint, Map<String, String> arguments) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(endpoint);
+        for( Map.Entry<String, String> arg : arguments.entrySet()) {
+            builder = builder.queryParam(arg.getKey(), arg.getValue());
+        }
+
+        return builder.build().toUriString();
+
     }
 }
