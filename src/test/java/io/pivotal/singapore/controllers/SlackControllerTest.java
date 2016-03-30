@@ -67,7 +67,7 @@ public class SlackControllerTest {
         @Test
         public void testHelloWorld() throws Exception {
             mockMvc.perform(get("/")
-                    .param("token", SLACK_TOKEN)
+                .param("token", SLACK_TOKEN)
                 .param("text", "")
                 .param("team_id", "pivotal.io")
                 .param("user_name", "bandersson")
@@ -337,7 +337,7 @@ public class SlackControllerTest {
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
             when(remoteApiService.call(subCommand, apiServiceParams)).thenReturn(
-                    new RemoteApiServiceResponse(true, returnParams, subCommand)
+                new RemoteApiServiceResponse(true, returnParams, subCommand)
             );
 
             Map<String, String> response = controller.index(slackInputParams);
@@ -361,7 +361,7 @@ public class SlackControllerTest {
         }
 
         @Test
-        public void testStringInterpolationForDefaultSuccessMessage() throws Exception{
+        public void testStringInterpolationForDefaultSuccessMessage() throws Exception {
             command.setDefaultResponseSuccess("It is time for {meal}, {name}! Have a good time, {name}!");
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
