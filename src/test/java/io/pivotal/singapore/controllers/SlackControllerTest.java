@@ -45,12 +45,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 @RunWith(Enclosed.class)
-@ActiveProfiles(profiles = "test")
 public class SlackControllerTest {
 
     @RunWith(SpringJUnit4ClassRunner.class)
     @SpringApplicationConfiguration(classes = MarvinApplication.class)
     @WebAppConfiguration
+    @ActiveProfiles(profiles = "test")
     public static class Integration {
         @Value("${api.slack.token}")
         String SLACK_TOKEN;
