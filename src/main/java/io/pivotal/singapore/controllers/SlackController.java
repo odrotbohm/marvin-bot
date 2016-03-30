@@ -44,72 +44,48 @@ class SlackController {
 
     @GetJson("/")
     Map<String, String> index(@RequestParam HashMap<String, String> params) throws Exception {
+
+        // Figuring out if request is valid (ie. from Slack)
         String token = params.get("token");
         if (token == null || !token.equals(SLACK_TOKEN)) {
             throw new UnrecognizedApiToken();
         }
 
+        // Validates that 'text' is there
         String commandText = params.get("text");
         if (commandText == null || commandText.isEmpty()) {
             return defaultResponse();
         }
 
+        // Parses into command, sub-command, args as token strings
         HashMap<String, String> parsedCommand = commandParserService.parse(commandText);
 
+
+        // Checks if Command exists
         Optional<Command> commandOptional = getCommand(parsedCommand.get("command"));
         if (!commandOptional.isPresent()) {
             return defaultResponse();
         }
 
+        // Makes remote API calls
         RemoteApiServiceResponse response;
-        Optional<SubCommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
+        Optional<ICommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
         Map _params = remoteServiceParams(params);
-        String message;
-        if (!subCommandOptional.isPresent()) {
-            Command command = commandOptional.get();
 
-            response = remoteApiService.call(command.getMethod(), command.getEndpoint(), _params);
-            message = getMessage(response, command);
-        } else {
-            SubCommand subCommand = subCommandOptional.get();
-            Map args = argumentParserService.parse(parsedCommand.get("arguments"), subCommand.getArguments());
-            _params.putAll(args);
+        ICommand cmd = subCommandOptional.orElse(commandOptional.get());
 
-            response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), _params);
-            message = getMessage(response, subCommand);
-        }
+        Map args = argumentParserService.parse(parsedCommand.get("arguments"), cmd.getArguments());
+        _params.putAll(args);
 
-        message = constructInterpolatedMessage(response.getBody(), message);
+        response = remoteApiService.call(cmd, _params);
+
+        // Compiles final response to Slack
         String messageType = response.getBody().get("message_type");
-
-        return textResponse(messageType, message);
+        return textResponse(messageType, response.getMessage());
     }
 
-    private String getMessage(RemoteApiServiceResponse response, ICommand command) {
-        String message = response.getBody().get("message");
-
-        if (message == null) {
-            message = response.isSuccessful() ? command.getDefaultResponseSuccess() : command.getDefaultResponseFailure();
-
-            if (message == null) { // No default message provided by service, so return whatever they sent
-                message = response.getBody().toString();
-            }
-        }
-
-        return message;
-    }
-
-    private String constructInterpolatedMessage(Map<String, String> payload, String message) {
-        for (Map.Entry<String, String> entry : payload.entrySet()) {
-            String pattern = String.format("{%s}", entry.getKey());
-            message = message.replace(pattern, entry.getValue());
-        }
-
-        return message;
-    }
-
-    private Optional<SubCommand> getSubCommand(Optional<Command> commandOptional, String subCommandText) {
-        return commandOptional.flatMap((c) -> c.findSubCommand(subCommandText));
+    private Optional<ICommand> getSubCommand(Optional<Command> command, String subCommandText) {
+        return command.flatMap((c) -> c.findSubCommand(subCommandText));
     }
 
     private HashMap<String, Object> remoteServiceParams(HashMap<String, String> params) {

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Entity
@@ -39,12 +40,16 @@ public class Command implements ICommand {
 
     public Command() {} // to make JPA happy....
 
-    public Optional<SubCommand> findSubCommand(String name) {
+    public Optional<ICommand> findSubCommand(String name) {
         for(SubCommand subCommand: subCommands) {
             if(subCommand.getName().equals(name))
                 return Optional.of(subCommand);
         }
 
         return Optional.empty();
+    }
+
+    public List<Map<String,String>> getArguments(){
+        return new ArrayList<>();
     }
 }

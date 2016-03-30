@@ -150,12 +150,13 @@ public class SlackControllerTest {
             HashMap<String, String> serviceResponse = new HashMap<>();
             String australiaTime = "The time in Australia is Beer o'clock.";
             serviceResponse.put("message", australiaTime);
-            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(new RemoteApiServiceResponse(true, serviceResponse));
+            when(remoteApiService.call(command, apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(true, serviceResponse, command));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(australiaTime)));
             verify(commandRepository, times(1)).findOneByName("time");
-            verify(remoteApiService, times(1)).call(command.getMethod(), command.getEndpoint(), apiServiceParams);
+            verify(remoteApiService, times(1)).call(command, apiServiceParams);
         }
 
         @Test
@@ -168,7 +169,8 @@ public class SlackControllerTest {
             HashMap<String, String> serviceResponse = new HashMap<>();
             String englandTime = "The time in England is Tea o'clock.";
             serviceResponse.put("message", englandTime);
-            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams)).thenReturn(new RemoteApiServiceResponse(true, serviceResponse));
+            when(remoteApiService.call(command, apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(true, serviceResponse, command));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(englandTime)));
@@ -199,8 +201,8 @@ public class SlackControllerTest {
             Map<String, String> returnParams = new TreeMap<>();
             String englandTime = "The time in England is Tea o'clock.";
             returnParams.put("message", englandTime);
-            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
-                new RemoteApiServiceResponse(true, returnParams)
+            when(remoteApiService.call(subCommand, apiServiceParams)).thenReturn(
+                new RemoteApiServiceResponse(true, returnParams, subCommand)
             );
 
             Map<String, String> response = controller.index(slackInputParams);
@@ -251,9 +253,8 @@ public class SlackControllerTest {
             apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
-            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
-                new RemoteApiServiceResponse(false, returnParams)
-            );
+            when(remoteApiService.call(subCommand, apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(false, returnParams, subCommand));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(subCommand.getDefaultResponseFailure())));
@@ -284,9 +285,8 @@ public class SlackControllerTest {
             apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
-            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
-                new RemoteApiServiceResponse(true, returnParams)
-            );
+            when(remoteApiService.call(subCommand, apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(true, returnParams, subCommand));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo(subCommand.getDefaultResponseSuccess())));
@@ -316,8 +316,8 @@ public class SlackControllerTest {
             apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
-            when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
-                    new RemoteApiServiceResponse(true, returnParams)
+            when(remoteApiService.call(subCommand, apiServiceParams)).thenReturn(
+                    new RemoteApiServiceResponse(true, returnParams, subCommand)
             );
 
             Map<String, String> response = controller.index(slackInputParams);
@@ -348,8 +348,8 @@ public class SlackControllerTest {
             HashMap<String, String> remoteServiceResponse = new HashMap<>();
             remoteServiceResponse.put("name", "Wilson");
             remoteServiceResponse.put("meal", "breakfast");
-            when(remoteApiService.call(command.getMethod(), command.getEndpoint(), apiServiceParams))
-                .thenReturn(new RemoteApiServiceResponse(true, remoteServiceResponse));
+            when(remoteApiService.call(command, apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(true, remoteServiceResponse, command));
 
             Map<String, String> response = controller.index(slackInputParams);
             assertThat(response.get("text"), is(equalTo("It is time for breakfast, Wilson! Have a good time, Wilson!")));

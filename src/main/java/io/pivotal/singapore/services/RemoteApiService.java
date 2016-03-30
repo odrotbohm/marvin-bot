@@ -1,6 +1,7 @@
 package io.pivotal.singapore.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.pivotal.singapore.models.ICommand;
 import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,6 +29,11 @@ public class RemoteApiService {
         restTemplate = _restTemplate;
     }
 
+    public RemoteApiServiceResponse call(ICommand command, Map params) {
+        return call(command.getMethod(), command.getEndpoint(), params)
+            .setCommand(command);
+    }
+
     public RemoteApiServiceResponse call(RequestMethod method, String endpoint, Map params) {
         try {
             switch (method) {
@@ -44,7 +50,7 @@ public class RemoteApiService {
                         String.format("HTTP method '%s' not supported.", method)
                     );
             }
-        } catch(HttpClientErrorException e) {
+        } catch (HttpClientErrorException e) {
             return new RemoteApiServiceResponse(false, parseHttpError(e));
         }
     }
@@ -76,7 +82,7 @@ public class RemoteApiService {
         }
         HashMap<String, String> body;
 
-        if(contentType.startsWith("application/json")) {
+        if (contentType.startsWith("application/json")) {
             ObjectMapper mapper = new ObjectMapper();
             try {
                 return mapper.readValue(exc.getResponseBodyAsByteArray(), HashMap.class);
