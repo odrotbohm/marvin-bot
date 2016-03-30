@@ -101,11 +101,8 @@ class SlackController {
         return commandRepository.findOneByName(commandName);
     }
 
-    HashMap<String, String> textResponse(MessageType messageType, String text) {
-        if (messageType == null) {
-            messageType = MessageType.user;
-        }
-        String responseType = getSlackResponseType(messageType);
+    HashMap<String, String> textResponse(Optional<MessageType> messageType, String text) {
+        String responseType = getSlackResponseType(messageType.orElse(MessageType.user));
 
         HashMap<String, String> response = new HashMap<>();
         response.put("response_type", responseType);
@@ -128,7 +125,7 @@ class SlackController {
     }
 
     private HashMap<String, String> defaultResponse() {
-        return textResponse(MessageType.user, "This will all end in tears.");
+        return textResponse(Optional.of(MessageType.user), "This will all end in tears.");
     }
 }
 

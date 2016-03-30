@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class RemoteApiServiceResponse {
     private Boolean success;
@@ -27,11 +28,11 @@ public class RemoteApiServiceResponse {
         return success;
     }
 
-    public MessageType getMessageType() { // TODO: Explicitly test this
+    public Optional<MessageType> getMessageType() { // TODO: Explicitly test this
         try {
-            return MessageType.valueOf(getBody().get("message_type"));
-        } catch(NullPointerException e) {
-            return null;
+            return Optional.of(MessageType.valueOf(getBody().get("message_type")));
+        } catch(NullPointerException | IllegalArgumentException e) {
+            return Optional.empty();
         }
     }
 

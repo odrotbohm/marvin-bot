@@ -212,21 +212,40 @@ public class SlackControllerTest {
 
         @Test
         public void testResponseMapping() throws Exception {
-            MessageType responseType = MessageType.channel;
+            Optional<MessageType> responseType = Optional.of(MessageType.channel);
             String text = "some example";
 
             HashMap<String, String> response = controller.textResponse(responseType, text);
             assertThat(response.get("response_type"), is("in_channel"));
 
-            responseType = MessageType.user;
+            responseType = Optional.of(MessageType.user);
             response = controller.textResponse(responseType, text);
 
             assertThat(response.get("response_type"), is("ephemeral"));
 
-            responseType = null;
+            responseType = Optional.empty();
             response = controller.textResponse(responseType, text);
 
             assertThat(response.get("response_type"), is("ephemeral"));
+        }
+
+        @Test
+        public void invalidMessageTypeTurnsIntoEpehemeral() throws Exception {
+            slackInputParams.put("text", "time england");
+            apiServiceParams.put("command", "time england");
+
+            when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
+
+            HashMap<String, String> serviceResponse = new HashMap<>();
+            String englandTime = "The time in England is Tea o'clock.";
+            serviceResponse.put("message", englandTime);
+            serviceResponse.put("message_type", "dingDong");
+            when(remoteApiService.call(command, apiServiceParams))
+                .thenReturn(new RemoteApiServiceResponse(true, serviceResponse, command));
+
+            Map<String, String> response = controller.index(slackInputParams);
+            assertThat(response.get("text"), is(equalTo(englandTime)));
+            assertThat(response.get("response_type"), is(equalTo("ephemeral")));
         }
 
         @Test
