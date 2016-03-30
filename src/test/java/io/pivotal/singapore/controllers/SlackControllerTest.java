@@ -8,6 +8,7 @@ import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.FrozenTimeMachine;
+import io.pivotal.singapore.utils.MessageType;
 import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -211,18 +212,18 @@ public class SlackControllerTest {
 
         @Test
         public void testResponseMapping() throws Exception {
-            String responseType = "channel";
+            MessageType responseType = MessageType.channel;
             String text = "some example";
 
             HashMap<String, String> response = controller.textResponse(responseType, text);
             assertThat(response.get("response_type"), is("in_channel"));
 
-            responseType = "user";
+            responseType = MessageType.user;
             response = controller.textResponse(responseType, text);
 
             assertThat(response.get("response_type"), is("ephemeral"));
 
-            responseType = "the_galaxy";
+            responseType = null;
             response = controller.textResponse(responseType, text);
 
             assertThat(response.get("response_type"), is("ephemeral"));

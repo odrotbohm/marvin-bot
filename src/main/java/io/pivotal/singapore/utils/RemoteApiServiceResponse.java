@@ -27,6 +27,14 @@ public class RemoteApiServiceResponse {
         return success;
     }
 
+    public MessageType getMessageType() { // TODO: Explicitly test this
+        try {
+            return MessageType.valueOf(getBody().get("message_type"));
+        } catch(NullPointerException e) {
+            return null;
+        }
+    }
+
     public String getMessage() {
         String message = getBody().getOrDefault("message", getDefaultMessage());
 

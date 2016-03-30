@@ -2,11 +2,11 @@ package io.pivotal.singapore.controllers;
 
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.models.ICommand;
-import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
 import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
+import io.pivotal.singapore.utils.MessageType;
 import io.pivotal.singapore.utils.RemoteApiServiceResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,8 +80,7 @@ class SlackController {
         response = remoteApiService.call(cmd, _params);
 
         // Compiles final response to Slack
-        String messageType = response.getBody().get("message_type");
-        return textResponse(messageType, response.getMessage());
+        return textResponse(response.getMessageType(), response.getMessage());
     }
 
     private Optional<ICommand> getSubCommand(Optional<Command> command, String subCommandText) {
@@ -102,12 +101,11 @@ class SlackController {
         return commandRepository.findOneByName(commandName);
     }
 
-    HashMap<String, String> textResponse(String messageType, String text) {
-        String responseType = nounMapping().get(messageType);
-
-        if (responseType == null) {
-            responseType = "ephemeral";
+    HashMap<String, String> textResponse(MessageType messageType, String text) {
+        if (messageType == null) {
+            messageType = MessageType.user;
         }
+        String responseType = getSlackResponseType(messageType);
 
         HashMap<String, String> response = new HashMap<>();
         response.put("response_type", responseType);
@@ -116,16 +114,21 @@ class SlackController {
         return response;
     }
 
-    private HashMap<String, String> nounMapping() {
-        HashMap<String, String> nouns = new HashMap<>();
-        nouns.put("user", "ephemeral");
-        nouns.put("channel", "in_channel");
-
-        return nouns;
+    private String getSlackResponseType(MessageType messageType) {
+        switch (messageType) {
+            case user:
+                return "ephemeral";
+            case channel:
+                return "in_channel";
+            default:
+                throw new IllegalArgumentException(
+                    String.format("MessageType '%s' is not configured for Slack", messageType.toString())
+                );
+        }
     }
 
     private HashMap<String, String> defaultResponse() {
-        return textResponse("user", "This will all end in tears.");
+        return textResponse(MessageType.user, "This will all end in tears.");
     }
 }
 
