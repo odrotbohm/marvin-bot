@@ -69,7 +69,7 @@ class SlackController {
 
         // Makes remote API calls
         RemoteApiServiceResponse response;
-        Optional<ICommand> subCommandOptional = getSubCommand(commandOptional, parsedCommand.get("sub_command"));
+        Optional<ICommand> subCommandOptional = commandOptional.get().findSubCommand(parsedCommand.get("sub_command"));
         Map _params = remoteServiceParams(params);
 
         ICommand cmd = subCommandOptional.orElse(commandOptional.get());
@@ -81,10 +81,6 @@ class SlackController {
 
         // Compiles final response to Slack
         return textResponse(response.getMessageType(), response.getMessage());
-    }
-
-    private Optional<ICommand> getSubCommand(Optional<Command> command, String subCommandText) {
-        return command.flatMap((c) -> c.findSubCommand(subCommandText));
     }
 
     private HashMap<String, Object> remoteServiceParams(HashMap<String, String> params) {
