@@ -194,7 +194,7 @@ public class SlackControllerTest {
             when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
-            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
             String englandTime = "The time in England is Tea o'clock.";
@@ -248,7 +248,7 @@ public class SlackControllerTest {
             when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
-            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
             when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
@@ -281,7 +281,7 @@ public class SlackControllerTest {
             when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
-            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
             when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(
@@ -313,7 +313,7 @@ public class SlackControllerTest {
             when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
-            apiServiceParams.put("arguments", parsedArguments);
+            apiServiceParams.putAll(parsedArguments);
             apiServiceParams.put("command", "time in London");
             Map<String, String> returnParams = new TreeMap<>();
             when(remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), apiServiceParams)).thenReturn(

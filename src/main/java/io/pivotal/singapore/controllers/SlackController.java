@@ -73,7 +73,7 @@ class SlackController {
         } else {
             SubCommand subCommand = subCommandOptional.get();
             Map args = argumentParserService.parse(parsedCommand.get("arguments"), subCommand.getArguments());
-            _params.put("arguments", args);
+            _params.putAll(args);
 
             response = remoteApiService.call(subCommand.getMethod(), subCommand.getEndpoint(), _params);
             message = getMessage(response, subCommand);
