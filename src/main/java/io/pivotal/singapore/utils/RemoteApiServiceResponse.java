@@ -28,9 +28,11 @@ public class RemoteApiServiceResponse {
         return success;
     }
 
-    public Optional<MessageType> getMessageType() { // TODO: Explicitly test this
+    public Optional<MessageType> getMessageType() {
         try {
-            return Optional.of(MessageType.valueOf(getBody().get("message_type")));
+            String messageTypeField = getBody().getOrDefault("messageType", getBody().get("message_type"));
+
+            return Optional.of(MessageType.valueOf(messageTypeField));
         } catch(NullPointerException | IllegalArgumentException e) {
             return Optional.empty();
         }
