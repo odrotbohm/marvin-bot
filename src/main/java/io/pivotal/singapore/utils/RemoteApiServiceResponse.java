@@ -61,7 +61,11 @@ public class RemoteApiServiceResponse {
     private String interpolate(String message) {
         for (Map.Entry<String, String> entry : getBody().entrySet()) {
             String pattern = String.format("{%s}", entry.getKey());
-            message = message.replace(pattern, entry.getValue());
+            try {
+                message = message.replace(pattern, entry.getValue());
+            } catch (Exception e) {
+                // do nothing
+            }
         }
 
         return message;
