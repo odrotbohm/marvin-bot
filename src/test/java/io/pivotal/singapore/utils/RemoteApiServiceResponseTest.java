@@ -1,5 +1,6 @@
 package io.pivotal.singapore.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.singapore.models.Command;
 import org.junit.Before;
 import org.junit.Test;
@@ -7,13 +8,12 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class RemoteApiServiceResponseTest {
@@ -86,6 +86,29 @@ public class RemoteApiServiceResponseTest {
             responseBody.put("name", userName);
 
             assertThat(subject.getMessage(), is(equalTo("Marvin says hi to Jarvis.")));
+        }
+
+        @Test
+        public void getInterpolatedMessageWhenKeyHasNestedValues() throws Exception {
+            String json = "{" +
+                "    \"errors\": [" +
+                "        {" +
+                "            \"entity\": \"CalendarEvent\"," +
+                "            \"message\": \"The Event/Date field is not valid\"," +
+                "            \"invalidValue\": \"2016-04-20T10:33:18.619+08:00\"," +
+                "            \"property\": \"calendarEventDateTimeString\"" +
+                "        }" +
+                "    ]" +
+                "}";
+            ObjectMapper mapper = new ObjectMapper();
+            HashMap<String, String> responseBody = mapper.readValue(json, HashMap.class);
+
+            subject = new RemoteApiServiceResponse(true, responseBody, command);
+
+            assertThat(subject.getMessage(), is(equalTo(
+                "{errors=[{entity=CalendarEvent, message=The Event/Date field is not valid, " +
+                    "invalidValue=2016-04-20T10:33:18.619+08:00, property=calendarEventDateTimeString}]}"
+            )));
         }
     }
 }
