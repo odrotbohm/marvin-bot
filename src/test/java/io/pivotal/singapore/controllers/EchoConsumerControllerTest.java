@@ -24,10 +24,7 @@ public class EchoConsumerControllerTest {
 
     @Test
     public void commandHandlerReturnsArgumentsAndMethod() throws IOException {
-        final ImmutableMap<String, Object> params =
-                new ImmutableMap.Builder<String, Object>()
-                        .put("arguments", new ImmutableMap.Builder<String, Integer>()
-                                .put("a", 1).build()).build();
+        final ImmutableMap<String, Object> params = new ImmutableMap.Builder<String, Object>().put("a", 1).build();
 
         Map<String, String> actual = controller.handleCommand(params, HttpMethod.DELETE);
         Map<String, String> message = jsonToMap(actual.get("message"));
@@ -40,18 +37,14 @@ public class EchoConsumerControllerTest {
 
     @Test
     public void subCommandHandlerReturnsSubCommand() throws IOException {
-        final ImmutableMap<String, Object> params =
-                new ImmutableMap.Builder<String, Object>()
-                        .put("arguments", new ImmutableMap.Builder<String, Integer>()
-                                .put("a", 1).build()).build();
+        final ImmutableMap<String, Object> params = new ImmutableMap.Builder<String, Object>().put("a", 1).build();
 
         Map<String, String> actual = controller.handleSubcommand(params, HttpMethod.DELETE, "sub_command");
         Map<String, String> message = jsonToMap(actual.get("message"));
         Map<String, String> arguments = jsonToMap(message.get("arguments"));
 
-        assertThat(message,
-                allOf(hasEntry("method", "DELETE"),
-                        hasEntry("subCommand", "sub_command")));
+        assertThat(message, allOf(hasEntry("method", "DELETE"),
+                hasEntry("subCommand", "sub_command")));
         assertThat(arguments, hasEntry("a", 1));
         assertThat(actual, hasEntry("message_type", "channel"));
     }

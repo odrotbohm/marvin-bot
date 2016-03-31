@@ -39,7 +39,7 @@ public class EchoConsumerController {
         final ImmutableMap.Builder<String, String> echo =
                 new ImmutableMap.Builder<String, String>()
                         .put("method", method.toString())
-                        .put("arguments", printer.writeValueAsString(params.get("arguments")));
+                        .put("arguments", printer.writeValueAsString(params));
 
         if (subCommands.length > 0) {
             echo.put("subCommand", subCommands[0]);
