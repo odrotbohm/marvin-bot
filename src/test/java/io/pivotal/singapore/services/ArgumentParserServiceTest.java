@@ -15,7 +15,9 @@ import java.util.*;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
 import static java.util.Collections.singletonMap;
@@ -96,6 +98,23 @@ public class ArgumentParserServiceTest {
 
             assertThat(result.get("start_time"), equalTo(expectedDateTimeString));
             assertThat(result.get("event_name"), equalTo("BBQ At the Pivotal Labs Singapore office"));
+        }
+
+        @Test
+        public void noNanosecondsInOutput() {
+            String s = "tomorrow";
+
+            Map result = aps.parse(s, argumentsConfig);
+
+            String timestamp = (String) result.get("timestamp");
+            String timePart = timestamp.split("T")[1].split("\\+")[0];
+            String seconds = timePart.split(":")[2];
+
+            assertThat(
+                String.format("Second part seems to contain nanoseconds, %s", timestamp),
+                seconds,
+                not(containsString("."))
+            );
         }
     }
 

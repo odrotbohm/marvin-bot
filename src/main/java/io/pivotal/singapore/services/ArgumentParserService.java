@@ -98,6 +98,8 @@ public class ArgumentParserService {
                 zonedDateTime = zonedDateTime.withZoneSameInstant(defaultTimezone);
             }
 
+            zonedDateTime = zonedDateTime.withNano(0);
+
             return new Pair<>(charactersToRemove, zonedDateTime.format(ISO_OFFSET_DATE_TIME));
         } else {
             throw new IllegalArgumentException(
