@@ -33,7 +33,7 @@ public class RemoteApiServiceResponse {
             String messageTypeField = getBody().getOrDefault("messageType", getBody().get("message_type"));
 
             return Optional.of(MessageType.valueOf(messageTypeField));
-        } catch(NullPointerException | IllegalArgumentException e) {
+        } catch (NullPointerException | IllegalArgumentException e) {
             return Optional.empty();
         }
     }
