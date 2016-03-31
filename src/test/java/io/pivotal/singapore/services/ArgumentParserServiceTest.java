@@ -87,7 +87,7 @@ public class ArgumentParserServiceTest {
 
         @Test
         public void parseArgumentsShouldBeEvaluatedInOrder() {
-            List <Map<String, String>> argumentsConfig = new ArrayList<Map<String, String>>();
+            List<Map<String, String>> argumentsConfig = new ArrayList<Map<String, String>>();
 
             String s = "23rd of March at 7pm \"BBQ At the Pivotal Labs Singapore office\"";
 
