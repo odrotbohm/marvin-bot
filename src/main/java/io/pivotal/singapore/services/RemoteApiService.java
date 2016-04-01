@@ -3,10 +3,13 @@ package io.pivotal.singapore.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.singapore.models.ICommand;
 import io.pivotal.singapore.utils.RemoteApiServiceResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.HttpClientErrorException;
@@ -22,11 +25,13 @@ public class RemoteApiService {
     private RestTemplate restTemplate;
 
     public RemoteApiService() {
-        restTemplate = new RestTemplate();
+        this(new RestTemplate());
     }
 
     public RemoteApiService(RestTemplate _restTemplate) {
         restTemplate = _restTemplate;
+        HttpClient httpClient = HttpClients.createDefault();
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
 
     public RemoteApiServiceResponse call(ICommand command, Map params) {

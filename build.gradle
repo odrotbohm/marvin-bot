@@ -39,6 +39,7 @@ dependencies {
     compile('org.projectlombok:lombok:1.16.8')
     compile('org.springframework.composed:spring-composed:1.0.0.BUILD-SNAPSHOT')
     compile('com.google.guava:guava:19.0')
+    compile('org.apache.httpcomponents:httpclient:4.5.2')
     runtime('org.postgresql:postgresql')
 
     testCompile('com.jayway.restassured:rest-assured:2.9.0')
