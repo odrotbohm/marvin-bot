@@ -24,9 +24,7 @@ public class EchoConsumerControllerTest {
 
     @Test
     public void commandHandlerReturnsArgumentsAndMethod() throws IOException {
-        final ImmutableMap<String, Object> params = new ImmutableMap.Builder<String, Object>().put("a", 1).build();
-
-        Map<String, String> actual = controller.handleCommand(params, HttpMethod.DELETE);
+        Map<String, String> actual = controller.handleCommand(ImmutableMap.of("a", 1), HttpMethod.DELETE);
         Map<String, String> message = jsonToMap(actual.get("message"));
         Map<String, String> arguments = jsonToMap(message.get("arguments"));
 
@@ -37,9 +35,7 @@ public class EchoConsumerControllerTest {
 
     @Test
     public void subCommandHandlerReturnsSubCommand() throws IOException {
-        final ImmutableMap<String, Object> params = new ImmutableMap.Builder<String, Object>().put("a", 1).build();
-
-        Map<String, String> actual = controller.handleSubcommand(params, HttpMethod.DELETE, "sub_command");
+        Map<String, String> actual = controller.handleSubcommand(ImmutableMap.of("a", 1), HttpMethod.DELETE, "sub_command");
         Map<String, String> message = jsonToMap(actual.get("message"));
         Map<String, String> arguments = jsonToMap(message.get("arguments"));
 
