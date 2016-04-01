@@ -1,35 +1,44 @@
 package io.pivotal.singapore.marvin.commands.arguments;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.singapore.utils.Pair;
-import lombok.Getter;
 
-import java.util.Collections;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RegexArgument implements Argument {
-    @Getter private String name;
+public class RegexArgument extends AbstractArgument {
     private Pattern regex;
-    @Getter private String pattern;
+
+    public RegexArgument() {
+    }
 
     public RegexArgument(String name, String regex) {
         this.name = name;
         this.pattern = regex;
-        this.regex = Pattern.compile(
-            String.format("^%s", (String) regex.subSequence(1, regex.length() - 1))
-        );
+        setRegex(regex);
     }
 
     public static Boolean canParse(String capture) {
         return capture.startsWith("/") && capture.endsWith("/");
     }
 
+    private void setRegex(String regex) {
+        this.regex = Pattern.compile(
+            String.format("^%s", (String) regex.subSequence(1, regex.length() - 1))
+        );
+    }
+
+    public Pattern getRegex() {
+        if(regex == null) {
+            setRegex(getPattern());
+        }
+
+        return regex;
+    }
+
     @Override
     public Pair<Integer, String> parse(String rawCommand) {
-        Matcher m = regex.matcher(rawCommand);
+        Matcher m = getRegex().matcher(rawCommand);
 
         try {
             m.find();

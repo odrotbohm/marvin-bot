@@ -1,28 +1,23 @@
 package io.pivotal.singapore.marvin.commands.arguments;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.singapore.utils.Pair;
-import lombok.Getter;
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
 import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
-public class TimestampArgument implements Argument {
+public class TimestampArgument extends AbstractArgument {
     private static final String MACRO_NAME = "TIMESTAMP";
-    @Getter private String name;
 
     public TimestampArgument(String name) {
-        this.name = name;
+        setName(name);
     }
 
     public static Boolean canParse(String capture) {
@@ -32,6 +27,11 @@ public class TimestampArgument implements Argument {
     @Override
     public String getPattern() {
         return MACRO_NAME;
+    }
+
+    @Override
+    public void setPattern(String pattern) {
+        // do nothing
     }
 
     @Override

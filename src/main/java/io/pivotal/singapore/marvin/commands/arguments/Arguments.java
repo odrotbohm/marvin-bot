@@ -2,7 +2,6 @@ package io.pivotal.singapore.marvin.commands.arguments;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import io.pivotal.singapore.utils.Pair;
 import lombok.Getter;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Collections;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class Arguments {
     @Getter
@@ -44,10 +42,10 @@ public class Arguments {
         return args;
     }
 
-    public Arguments(List<Map<String, String>> argumentsJson) {
+    public Arguments(List<Map<String, String>> argumentsJson) throws IllegalArgumentException {
         for (Map<String, String> argsMap : argumentsJson) {
             for (Map.Entry<String, String> captureGroup : argsMap.entrySet()) {
-                addArgument(ArgumentFactory.getArgument(captureGroup.getKey(), captureGroup.getValue()));
+                addArgument(ArgumentFactory.getWithEmptyArgument(captureGroup.getKey(), captureGroup.getValue()));
             }
         }
     }

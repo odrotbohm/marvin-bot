@@ -11,4 +11,12 @@ class ArgumentFactory {
             throw new IllegalArgumentException(String.format("Unknown factory for '%s'", pattern));
         }
     }
+
+    static Argument getWithEmptyArgument(String name, String pattern) {
+        try {
+            return getArgument(name, pattern);
+        } catch (IllegalArgumentException e) {
+            return new InvalidArgument(name, pattern);
+        }
+    }
 }
