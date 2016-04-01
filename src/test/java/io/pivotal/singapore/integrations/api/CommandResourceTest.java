@@ -145,15 +145,15 @@ public class CommandResourceTest {
         JSONArray argsArray = new JSONArray();
 
         HashMap<String, String> arg1 = new HashMap<>();
-        arg1.put("zzz", "form1");
+        arg1.put("zzz", "/form1/");
         argsArray.put(arg1);
 
         HashMap<String, String> arg2 = new HashMap<>();
-        arg2.put("lll", "form2");
+        arg2.put("lll", "/form2/");
         argsArray.put(arg2);
 
         HashMap<String, String> arg3 = new HashMap<>();
-        arg3.put("aaa", "form3");
+        arg3.put("aaa", "/form3/");
         argsArray.put(arg3);
 
         JSONObject subCommandObject = new JSONObject()
@@ -188,8 +188,8 @@ public class CommandResourceTest {
                 body("subCommands[0].endpoint", is("/bar")).
                 body("subCommands[0].defaultResponseSuccess", is("I'm a success")).
                 body("subCommands[0].defaultResponseFailure", is("I'm a failure")).
-                body("subCommands[0].arguments[0].zzz", is("form1")).
-                body("subCommands[0].arguments[1].lll", is("form2")).
-                body("subCommands[0].arguments[2].aaa", is("form3"));
+                body("subCommands[0].arguments[0].zzz", is("/form1/")).
+                body("subCommands[0].arguments[1].lll", is("/form2/")).
+                body("subCommands[0].arguments[2].aaa", is("/form3/"));
     }
 }

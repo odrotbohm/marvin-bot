@@ -1,10 +1,10 @@
 package io.pivotal.singapore.controllers;
 
 import io.pivotal.singapore.MarvinApplication;
+import io.pivotal.singapore.marvin.commands.arguments.Arguments;
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.models.SubCommand;
 import io.pivotal.singapore.repositories.CommandRepository;
-import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.FrozenTimeMachine;
@@ -37,8 +37,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -87,9 +86,6 @@ public class SlackControllerTest {
 
         @Spy
         private FrozenTimeMachine clock;
-
-        @Mock
-        private ArgumentParserService argumentParserService;
 
         @Spy
         private CommandParserService commandParserService;
@@ -180,12 +176,13 @@ public class SlackControllerTest {
         @Test
         public void findsSubCommandsWhenItHasThem() throws Exception {
             slackInputParams.put("text", "time in London");
+            Arguments arguments = mock(Arguments.class);
 
             SubCommand subCommand = new SubCommand();
             subCommand.setName("in");
             subCommand.setMethod(RequestMethod.POST);
             subCommand.setEndpoint("http://example.com/hello");
-            subCommand.setArguments(new ArrayList<>());
+            subCommand.setArguments(arguments);
 
             List<SubCommand> subCommands = new ArrayList<>();
             subCommands.add(subCommand);
@@ -194,7 +191,7 @@ public class SlackControllerTest {
             Map<String, String> parsedArguments = new TreeMap<>();
             parsedArguments.put("location", "London");
 
-            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(arguments.parse("London")).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
             apiServiceParams.putAll(parsedArguments);
@@ -251,6 +248,7 @@ public class SlackControllerTest {
         @Test
         public void testDefaultErrorResponse() throws Exception {
             slackInputParams.put("text", "time in London");
+            Arguments arguments = mock(Arguments.class);
 
             SubCommand subCommand = new SubCommand();
             subCommand.setName("in");
@@ -258,7 +256,7 @@ public class SlackControllerTest {
             subCommand.setEndpoint("http://example.com/hello");
             subCommand.setDefaultResponseFailure("Shucks... something went wrong.");
             subCommand.setDefaultResponseSuccess("w00t!");
-            subCommand.setArguments(new ArrayList<>());
+            subCommand.setArguments(arguments);
 
             List<SubCommand> subCommands = new ArrayList<>();
             subCommands.add(subCommand);
@@ -267,7 +265,7 @@ public class SlackControllerTest {
             Map<String, String> parsedArguments = new TreeMap<>();
             parsedArguments.put("location", "London");
 
-            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(arguments.parse("London")).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
             apiServiceParams.putAll(parsedArguments);
@@ -283,6 +281,7 @@ public class SlackControllerTest {
         @Test
         public void testDefaultSuccessResponse() throws Exception {
             slackInputParams.put("text", "time in London");
+            Arguments arguments = mock(Arguments.class);
 
             SubCommand subCommand = new SubCommand();
             subCommand.setName("in");
@@ -290,7 +289,7 @@ public class SlackControllerTest {
             subCommand.setEndpoint("http://example.com/hello");
             subCommand.setDefaultResponseFailure("Shucks... something went wrong.");
             subCommand.setDefaultResponseSuccess("w00t!");
-            subCommand.setArguments(new ArrayList<>());
+            subCommand.setArguments(arguments);
 
             List<SubCommand> subCommands = new ArrayList<>();
             subCommands.add(subCommand);
@@ -299,7 +298,7 @@ public class SlackControllerTest {
             Map<String, String> parsedArguments = new TreeMap<>();
             parsedArguments.put("location", "London");
 
-            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(arguments.parse("London")).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
             apiServiceParams.putAll(parsedArguments);
@@ -316,12 +315,13 @@ public class SlackControllerTest {
         @Test
         public void testNoDefaultSuccessResponse() throws Exception {
             slackInputParams.put("text", "time in London");
+            Arguments arguments = mock(Arguments.class);
 
             SubCommand subCommand = new SubCommand();
             subCommand.setName("in");
             subCommand.setMethod(RequestMethod.POST);
             subCommand.setEndpoint("http://example.com/hello");
-            subCommand.setArguments(new ArrayList<>());
+            subCommand.setArguments(arguments);
 
             List<SubCommand> subCommands = new ArrayList<>();
             subCommands.add(subCommand);
@@ -330,7 +330,7 @@ public class SlackControllerTest {
             Map<String, String> parsedArguments = new TreeMap<>();
             parsedArguments.put("location", "London");
 
-            when(argumentParserService.parse("London", subCommand.getArguments())).thenReturn(parsedArguments);
+            when(arguments.parse("London")).thenReturn(parsedArguments);
             when(commandRepository.findOneByName("time")).thenReturn(optionalCommand);
 
             apiServiceParams.putAll(parsedArguments);

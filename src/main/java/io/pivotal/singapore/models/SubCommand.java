@@ -1,5 +1,10 @@
 package io.pivotal.singapore.models;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.pivotal.singapore.marvin.commands.arguments.Arguments;
+import io.pivotal.singapore.marvin.commands.arguments.serializers.ArgumentsDeserializerJson;
+import io.pivotal.singapore.marvin.commands.arguments.serializers.ArgumentsSerializerJson;
 import io.pivotal.singapore.repositories.converters.ArgumentListConverter;
 import lombok.Data;
 import lombok.Getter;
@@ -7,8 +12,6 @@ import lombok.Setter;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.Map;
 
 @Entity
 @Data
@@ -26,5 +29,7 @@ public class SubCommand implements ICommand {
     private RequestMethod method;
 
     @Convert(converter = ArgumentListConverter.class)
-    private List<Map<String,String>> arguments;
+    @JsonDeserialize(converter = ArgumentsDeserializerJson.class)
+    @JsonSerialize(converter = ArgumentsSerializerJson.class)
+    @Getter @Setter private Arguments arguments = new Arguments();
 }

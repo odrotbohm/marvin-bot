@@ -3,7 +3,6 @@ package io.pivotal.singapore.controllers;
 import io.pivotal.singapore.models.Command;
 import io.pivotal.singapore.models.ICommand;
 import io.pivotal.singapore.repositories.CommandRepository;
-import io.pivotal.singapore.services.ArgumentParserService;
 import io.pivotal.singapore.services.CommandParserService;
 import io.pivotal.singapore.services.RemoteApiService;
 import io.pivotal.singapore.utils.MessageType;
@@ -33,9 +32,6 @@ class SlackController {
 
     @Autowired
     CommandParserService commandParserService;
-
-    @Autowired
-    ArgumentParserService argumentParserService;
 
     @Value("${api.slack.token}")
     private String SLACK_TOKEN;
@@ -74,7 +70,7 @@ class SlackController {
 
         ICommand cmd = subCommandOptional.orElse(commandOptional.get());
 
-        Map args = argumentParserService.parse(parsedCommand.get("arguments"), cmd.getArguments());
+        Map args = cmd.getArguments().parse(parsedCommand.get("arguments"));
         _params.putAll(args);
 
         response = remoteApiService.call(cmd, _params);

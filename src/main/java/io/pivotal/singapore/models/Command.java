@@ -1,5 +1,6 @@
 package io.pivotal.singapore.models;
 
+import io.pivotal.singapore.marvin.commands.arguments.Arguments;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -7,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Entity
@@ -49,7 +49,7 @@ public class Command implements ICommand {
         return Optional.empty();
     }
 
-    public List<Map<String,String>> getArguments(){
-        return new ArrayList<>();
+    public Arguments getArguments(){
+        return new Arguments();
     }
 }

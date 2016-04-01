@@ -1,9 +1,7 @@
 package io.pivotal.singapore.models;
 
+import io.pivotal.singapore.marvin.commands.arguments.Arguments;
 import org.springframework.web.bind.annotation.RequestMethod;
-
-import java.util.List;
-import java.util.Map;
 
 public interface ICommand {
     String getName();
@@ -13,5 +11,5 @@ public interface ICommand {
     String getDefaultResponseSuccess();
     String getDefaultResponseFailure();
 
-    List<Map<String, String>> getArguments();
+    Arguments getArguments();
 }
