@@ -1,5 +1,6 @@
 package io.pivotal.singapore.marvin.commands.arguments;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.pivotal.singapore.utils.Pair;
 
 public interface Argument {
@@ -11,6 +12,4 @@ public interface Argument {
 
     String getName();
     String getPattern();
-
-    String toJson();
 }

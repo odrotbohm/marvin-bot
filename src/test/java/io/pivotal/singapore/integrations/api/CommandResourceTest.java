@@ -22,7 +22,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
@@ -149,7 +148,7 @@ public class CommandResourceTest {
         argsArray.put(arg1);
 
         HashMap<String, String> arg2 = new HashMap<>();
-        arg2.put("lll", "/form2/");
+        arg2.put("lll", "/force-json-esc\\aping/");
         argsArray.put(arg2);
 
         HashMap<String, String> arg3 = new HashMap<>();
@@ -173,7 +172,7 @@ public class CommandResourceTest {
                 .put("method", "GET")
                 .put("subCommands", subCommands);
 
-        given().
+        String commandURI = given().
                 log().all().
                 contentType(ContentType.JSON).
                 content(json.toString()).
@@ -183,13 +182,23 @@ public class CommandResourceTest {
         then().
                 log().all().
                 statusCode(SC_CREATED).
+        extract().
+            path("_links.self.href");
+
+        // Ensure that the object is persisted and serialized/deserialized.
+        given().
+                log().all().
+        when().
+                get(commandURI).
+        then().
+                statusCode(SC_OK).
                 body("subCommands[0].name", is("bar")).
                 body("subCommands[0].method", is("POST")).
                 body("subCommands[0].endpoint", is("/bar")).
                 body("subCommands[0].defaultResponseSuccess", is("I'm a success")).
                 body("subCommands[0].defaultResponseFailure", is("I'm a failure")).
                 body("subCommands[0].arguments[0].zzz", is("/form1/")).
-                body("subCommands[0].arguments[1].lll", is("/form2/")).
+                body("subCommands[0].arguments[1].lll", is("/force-json-esc\\aping/")).
                 body("subCommands[0].arguments[2].aaa", is("/form3/"));
     }
 }

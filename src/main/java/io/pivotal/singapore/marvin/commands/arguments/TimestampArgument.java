@@ -1,5 +1,7 @@
 package io.pivotal.singapore.marvin.commands.arguments;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.singapore.utils.Pair;
 import lombok.Getter;
 import org.ocpsoft.prettytime.nlp.PrettyTimeParser;
@@ -8,6 +10,7 @@ import org.ocpsoft.prettytime.nlp.parse.DateGroup;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -29,11 +32,6 @@ public class TimestampArgument implements Argument {
     @Override
     public String getPattern() {
         return MACRO_NAME;
-    }
-
-    @Override
-    public String toJson() {
-        return String.format("{\"%s\":\"%s\"}", getName(), getPattern());
     }
 
     @Override

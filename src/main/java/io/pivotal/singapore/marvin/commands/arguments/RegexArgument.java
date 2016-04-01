@@ -1,8 +1,11 @@
 package io.pivotal.singapore.marvin.commands.arguments;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.singapore.utils.Pair;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,10 +43,4 @@ public class RegexArgument implements Argument {
             );
         }
     }
-
-    @Override
-    public String toJson() {
-        return String.format("{\"%s\":\"%s\"}", getName(), getPattern());
-    }
-
 }

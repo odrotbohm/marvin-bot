@@ -1,6 +1,8 @@
 package io.pivotal.singapore.marvin.commands.arguments;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import io.pivotal.singapore.utils.Pair;
 import lombok.Getter;
 import org.ocpsoft.prettytime.shade.edu.emory.mathcs.backport.java.util.Collections;
@@ -13,7 +15,8 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class Arguments {
-    @Getter private List<Argument> arguments = new ArrayList<>();
+    @Getter
+    private List<Argument> arguments = new ArrayList<>();
 
     public Arguments() {
     }
@@ -57,14 +60,19 @@ public class Arguments {
 
     public String toJson() {
         if (arguments.isEmpty()) {
-            return "";
+            return "[]";
         } else {
-            return "[" +
-                arguments
-                    .stream()
-                    .map(Argument::toJson)
-                    .collect(Collectors.joining(",")) +
-                "]";
+            List<Map> argumentsJson = new ArrayList<>();
+            for (Argument argument : getArguments()) {
+                argumentsJson.add(Collections.singletonMap(argument.getName(), argument.getPattern()));
+            }
+
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                return mapper.writeValueAsString(argumentsJson);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Failed to create json from object", e);
+            }
         }
     }
 
