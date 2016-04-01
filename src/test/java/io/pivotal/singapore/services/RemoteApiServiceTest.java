@@ -101,6 +101,16 @@ public class RemoteApiServiceTest {
     }
 
     @Test
+    public void callsEndpointWithPatch() throws Exception {
+        command.setMethod(RequestMethod.PATCH);
+        setupMockServer("http://example.com/", HttpMethod.PATCH);
+
+        RemoteApiServiceResponse result = callRemoteApiService();
+
+        assertThat(result.getBody().get("status"), is(equalTo("SUCCESS!!!!!!!")));
+    }
+
+    @Test
     public void callsEndpointWithTheCorrespondingMethod() throws Exception {
         RemoteApiServiceResponse result = getRemoteApiServiceResponse(
             withSuccess("{ \"status\" : \"SUCCESS!!!!!!!\" }", MediaType.APPLICATION_JSON)

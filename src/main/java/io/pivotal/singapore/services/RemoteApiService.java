@@ -45,6 +45,8 @@ public class RemoteApiService {
                     return new RemoteApiServiceResponse(true, exchangeForObject(HttpMethod.PUT, endpoint, params));
                 case DELETE:
                     return new RemoteApiServiceResponse(true, exchangeForObject(HttpMethod.DELETE, endpoint, params));
+                case PATCH:
+                    return new RemoteApiServiceResponse(true, exchangeForObject(HttpMethod.PATCH, endpoint, params));
                 default:
                     throw new IllegalArgumentException(
                         String.format("HTTP method '%s' not supported.", method)
