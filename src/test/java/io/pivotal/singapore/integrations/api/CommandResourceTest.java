@@ -112,6 +112,7 @@ public class CommandResourceTest {
         when().
                 post("/api/v1/commands/").
         then().
+            log().all().
                 statusCode(SC_CREATED);
 
         JSONObject newJson = originalJson.put("method", "POST")
@@ -239,7 +240,7 @@ public class CommandResourceTest {
             then().
             log().all().
             statusCode(SC_BAD_REQUEST).
-            body("errors[0].property", is("subCommands[0].arguments[0]")).
+            body("errors[0].property", is("subCommands[0].arguments")).
             body("errors[0].message", is("The argument 'zzz' is an invalid type"));
 
     }
