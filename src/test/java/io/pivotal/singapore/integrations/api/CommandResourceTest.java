@@ -19,12 +19,12 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
 
 import static com.jayway.restassured.RestAssured.given;
 import static com.jayway.restassured.RestAssured.when;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -37,7 +37,6 @@ import static org.hamcrest.core.Is.is;
 @IntegrationTest("server.port:0")
 
 public class CommandResourceTest {
-    @Autowired private WebApplicationContext wac;
     @Autowired private CommandRepository commandRepository;
 
     @Value("${local.server.port}")
@@ -200,5 +199,48 @@ public class CommandResourceTest {
                 body("subCommands[0].arguments[0].zzz", is("/form1/")).
                 body("subCommands[0].arguments[1].lll", is("/force-json-esc\\aping/")).
                 body("subCommands[0].arguments[2].aaa", is("/form3/"));
+    }
+
+    @Test
+    public void returnsErrorResponseWhenInvalidArgumentSent() {
+        Command command = new Command("pity the fool", "http://localhost/9");
+        commandRepository.save(command);
+
+        JSONArray subCommands = new JSONArray();
+        JSONArray argsArray = new JSONArray();
+
+        HashMap<String, String> arg1 = new HashMap<>();
+        arg1.put("zzz", "/form1");  // doesn't have finishing / to denote a regex
+        argsArray.put(arg1);
+
+        JSONObject subCommandObject = new JSONObject()
+            .put("name", "bar")
+            .put("endpoint", "/bar")
+            .put("method", "POST")
+            .put("defaultResponseSuccess", "I'm a success")
+            .put("defaultResponseFailure", "I'm a failure")
+            .put("arguments", argsArray);
+
+        subCommands.put(subCommandObject);
+
+
+        JSONObject commandJson = new JSONObject()
+            .put("name", "pity the fool")
+            .put("endpoint", "http://localhost/9")
+            .put("method", "GET")
+            .put("subCommands", subCommands);
+        given().
+            log().all().
+            contentType(ContentType.JSON).
+            content(commandJson.toString()).
+            when().
+            log().all().
+            post("/api/v1/commands/").
+            then().
+            log().all().
+            statusCode(SC_BAD_REQUEST).
+            body("errors[0].property", is("subCommands[0].arguments[0]")).
+            body("errors[0].message", is("The argument 'zzz' is an invalid type"));
+
     }
 }
